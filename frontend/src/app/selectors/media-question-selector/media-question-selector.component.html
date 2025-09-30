@@ -1,0 +1,35 @@
+<div class="content-container">
+    <div class="left">
+        <div class="media" *ngIf="contentImage">
+            <img [src]="questionImageLink" alt="Image" />
+        </div>
+        <div class="mediaAudio" *ngIf="contentAudio">
+            <audio controls autoplay>
+                <source [src]="questionAudioLink" />
+                Your browser does not support the audio element.
+            </audio>
+        </div>
+        <div class="media" *ngIf="contentVideo">
+            <video controls autoplay loop>
+                <source [src]="questionVideoLink" />
+                Your browser does not support the video element.
+            </video>
+        </div>
+    </div>
+    <div class="right" *ngIf="!onlyAudio">
+        <h1 style="white-space: pre-line">{{ question }}</h1>
+        <div *ngFor="let answer of questionAnswers; index as i"
+            [ngClass]="{'geolocation' : questionType == 'geolocation'}">
+            <button
+                [ngClass]="{'button-geolocation' : questionType == 'geolocation','button-other' : questionType != 'geolocation'}">{{answer.text}}</button>
+        </div>
+    </div>
+    <div class="center" *ngIf="onlyAudio">
+        <h1 style="white-space: pre-line">{{ question }}</h1>
+        <div *ngFor="let answer of questionAnswers; index as i"
+            [ngClass]="{'geolocation' : questionType == 'geolocation'}">
+            <button
+                [ngClass]="{'button-geolocation' : questionType == 'geolocation','button-other' : questionType != 'geolocation'}">{{answer.text}}</button>
+        </div>
+    </div>
+</div>

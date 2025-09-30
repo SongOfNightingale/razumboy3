@@ -1,0 +1,24 @@
+<div class="content-container">
+  <div class="centered">
+    <h1 class="question" style="white-space: pre-line">{{ question }}</h1>
+    <br><br>
+    <div class="media" *ngIf="contentImage">
+      <img [src]="answerImageLink" alt="Image" />
+    </div>
+    <div class="mediaAudio" *ngIf="contentAudio">
+      <audio controls autoplay>
+        <source [src]="answerAudioLink" />
+        Your browser does not support the audio element.
+      </audio>
+    </div>
+    <div class="media" *ngIf="contentVideo">
+      <video controls autoplay loop>
+        <source [src]="answerVideoLink" />
+        Your browser does not support the video element.
+      </video>
+    </div>
+    <br><br>
+    <h1 class="answer" *ngIf="isEnabled">{{ correctAnswer }}</h1>
+    <h4 class="comment" style="white-space: pre-line" *ngIf="isEnabled && comment != ''">{{ comment }}</h4>
+  </div>
+</div>

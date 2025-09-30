@@ -1,0 +1,52 @@
+.content-container {
+    background-color: #ffffff;
+    /* Gray background color */
+    padding: 20px;
+    border-radius: 10px;
+    /* Optional: Add rounded corners */
+    text-align: center;
+    margin: 20px;
+    font-family: 'Nokia';
+}
+
+label {
+    line-height: 1;
+}
+
+h2,
+h4 {
+    color: #333;
+}
+
+table {
+    width: 100%;
+    margin-top: 10px;
+    border-collapse: collapse;
+}
+
+th {
+    background-color: lightgray;
+}
+
+th,
+td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+    font-size: 24px;
+}
+
+.host-question-content-container {
+    font-size: 48px;
+    text-align: center;
+    display: grid;
+    margin-top: 8vh;
+    font-family: 'Nokia';
+    line-height: 1.5;
+    background-color: #74B6CC;
+}
+
+.all {
+    height: 100vh;
+    background-color: #74B6CC;
+}

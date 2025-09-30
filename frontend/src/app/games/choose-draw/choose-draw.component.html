@@ -1,0 +1,19 @@
+<div class="position-relative">
+    <app-sidebar-game [isSidebarCollapsed]="isSidebarCollapsed" (sidebarToggle)="onSidebarToggle()">
+    </app-sidebar-game>
+    <button class="sidebar-toggle-btn" [ngClass]="{ 'sidebar-collapsed': isSidebarCollapsed }"
+        (click)="onSidebarToggle()">
+        <i class="fas fa-bars"></i>
+    </button>
+</div>
+<div class="draw-content-container">
+    <h2>Разыгровка</h2>
+
+
+    <label *ngFor="let question of drawQuestions">
+        <input type="radio" name="option" value="question.id" (change)="onItemChange(question.id)">{{question.text}}
+    </label>
+
+    <button type="button" (click)="sendDrawQuestion()">Отправить</button>
+
+</div>

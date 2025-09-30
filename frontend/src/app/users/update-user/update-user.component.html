@@ -1,0 +1,17 @@
+<div class="position-relative">
+    <app-sidebar [isSidebarCollapsed]="isSidebarCollapsed" (sidebarToggle)="onSidebarToggle()">
+    </app-sidebar>
+    <button class="sidebar-toggle-btn" [ngClass]="{ 'sidebar-collapsed': isSidebarCollapsed }"
+        (click)="onSidebarToggle()">
+        <i class="fas fa-bars"></i>
+    </button>
+</div>
+<div class="user-create-content-container">
+    <label for="name">Name:</label>
+    <input type="text" id="name" [(ngModel)]="name" placeholder="Enter your name">
+
+    <label for="password">Password:</label>
+    <input type="password" id="password" [(ngModel)]="password" placeholder="Enter your password">
+
+    <button (click)="saveUser()">Save</button>
+</div>

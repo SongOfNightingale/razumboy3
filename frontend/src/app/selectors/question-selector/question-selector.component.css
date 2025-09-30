@@ -1,0 +1,49 @@
+.content-container {
+    background-color: #3e88b4;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.centered {
+    text-align: center;
+    color: white;
+}
+
+h4 {
+    font-size: 36px;
+    font-family: 'Nokia';
+}
+
+h1 {
+    font-size: 72px;
+    line-height: 1.1;
+    font-family: 'Nokia';
+    color: white;
+}
+
+button {    
+    font-family: 'Nokia';
+    border-radius: 14px;
+    border-style: solid;
+    border-width: 3px;
+    -moz-border-radius: 20px;
+    -webkit-border-radius: 30px;
+    text-transform: capitalize;
+    background-color: #74B6CC;
+    border-color: white;
+    color: #ffffff;
+    padding: 20px;
+    font-size: 2vw;
+    line-height: 1;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    width: 100%;
+    text-align: left;
+}
+
+.geolocation {
+    display: inline-block;
+    padding: 10px;
+}

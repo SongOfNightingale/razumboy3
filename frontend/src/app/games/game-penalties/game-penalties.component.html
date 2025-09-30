@@ -1,0 +1,24 @@
+<div class="position-relative">
+    <app-sidebar-game [isSidebarCollapsed]="isSidebarCollapsed" (sidebarToggle)="onSidebarToggle()">
+    </app-sidebar-game>
+    <div class="sidebar-toggle-btn" [ngClass]="{ 'sidebar-collapsed': isSidebarCollapsed }"
+        (click)="onSidebarToggle()">
+        <i class="fas fa-bars"></i>
+</div>
+</div>
+<div class="form-content-container">
+    <div class="form-group">
+        <label for="user">User:</label>
+        <select id="user" [(ngModel)]="selectedUser">
+            <option value="">Выберите команду</option>
+            <option *ngFor="let user of users" [value]="user.id">{{ user.username }}</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="penalty">Баллы:</label>
+        <input type="number" id="penalty" value="0" [(ngModel)]="bonusPenaltyNumber" />
+    </div>
+    <div class="form-group">
+        <button (click)="savePenalty()">Сохранить</button>
+    </div>
+</div>

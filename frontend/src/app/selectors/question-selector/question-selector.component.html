@@ -1,0 +1,8 @@
+<div class="content-container">
+  <div class="centered">
+    <h1 style="white-space: pre-line">{{ question }}</h1>
+    <div *ngFor="let answer of questionAnswers; index as i" [ngClass]="{'geolocation' : questionType == 'geolocation'}">
+      <button>{{answer.text}}</button>
+  </div>
+  </div>
+</div>

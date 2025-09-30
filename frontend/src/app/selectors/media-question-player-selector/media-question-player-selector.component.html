@@ -1,0 +1,36 @@
+<div class="content-container">
+    <div class="content">
+        <div class="media" *ngIf="contentType === 'image'">
+            <img [src]="questionMediaLink" alt="Image" />
+        </div>
+        <h1 class="question" style="white-space: pre-line">{{ question }}</h1>
+    </div>
+    <div class="centered-textarea" *ngIf="!answerSent && !isDisabled && questionType == 'textarea'">
+        <textarea *ngIf="questionType == 'textarea'" [(ngModel)]="answer" (ngModelChange)="sendProvisionalAnswer()" placeholder="Ваш ответ"
+            rows="3"></textarea>
+        <button class="button-43" [disabled]="answer === '' && answersArray.length == 0"
+            (click)="sendAnswer()">Отправить</button>
+    </div>
+    <div class="centered-checkbox" *ngIf="!answerSent && !isDisabled && questionType != 'textarea'">
+        <div class="radio" *ngIf="questionType == 'radio' || questionType == 'geolocation'" [ngClass]="{'div-geo' : questionType == 'geolocation'}">
+            <label *ngFor="let option of radioAnswers"
+                [ngClass]="{'isChecked' : answer == option.text,'isNotChecked' : answer != option.text}">
+                <input type="radio" name="option" value="option.text"
+                    (change)="onRadioItemChange(option.text)">{{option.text}}
+            </label>
+        </div>
+        <div class="checkbox" *ngIf="questionType == 'checkbox'">
+            <label *ngFor="let option of checkboxAnswers"
+                [ngClass]="{'isChecked' : option.checked,'isNotChecked' : !option.checked}">
+                <mat-checkbox (change)="onItemChange(option.text)" [checked]="option.checked">
+                    {{option.text}}</mat-checkbox>
+                {{option.text}}
+            </label>
+        </div>
+        <button class="button-43" [disabled]="answer === '' && answersArray.length == 0"
+            (click)="sendAnswer()">Отправить</button>
+    </div>
+    <div *ngIf="answerSent">
+        <h1 class="answerSent">Ваш ответ принят</h1>
+    </div>
+</div>

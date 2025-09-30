@@ -1,0 +1,56 @@
+<div class="position-relative">
+    <app-sidebar [isSidebarCollapsed]="isSidebarCollapsed" (sidebarToggle)="onSidebarToggle()">
+    </app-sidebar>
+    <button class="sidebar-toggle-btn" [ngClass]="{ 'sidebar-collapsed': isSidebarCollapsed }"
+        (click)="onSidebarToggle()">
+        <i class="fas fa-bars"></i>
+    </button>
+</div>
+<div class="questions-content-container">
+    <div class="search-content-container">
+        <label for="questionSearch">Search question text:</label>
+        <input id="questionSearch" [(ngModel)]="questionFilter" (input)="applyFilters()" />
+
+        <label for="typeFilter">Filter by type:</label>
+        <select id="typeFilter" [(ngModel)]="selectedType" (change)="applyFilters()">
+            <option value="">All types</option>
+            <option *ngFor="let type of uniqueTypes" [value]="type">{{ type }}</option>
+        </select>
+
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th (click)="sort('id')">Id <i [class]="getSortIcon('id')"></i></th>
+                <th (click)="sort('text')">Text <i [class]="getSortIcon('text')"></i></th>
+                <th (click)="sort('type')">Type <i [class]="getSortIcon('type')"></i></th>
+                <th (click)="sort('draw')">Разыгровка <i [class]="getSortIcon('draw')"></i></th>
+                <th (click)="sort('created')">Created <i [class]="getSortIcon('created')"></i></th>
+                <th (click)="sort('updated')">Updated <i [class]="getSortIcon('updated')"></i></th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let question of filteredQuestions">
+                <td *ngIf="question.used == '0'">{{ question.id }}</td>
+                <td *ngIf="question.used == '0'">{{ question.text }}</td>
+                <td *ngIf="question.used == '0'">{{ question.type }}</td>
+                <td *ngIf="question.used == '0'"><span *ngIf="question.draw == '1'">{{ question.draw }}</span></td>
+                <td *ngIf="question.used == '0'">{{ question.created | date: 'dd.MM.yyyy HH:mm:ss' }}</td>
+                <td *ngIf="question.used == '0'">{{ question.updated | date: 'dd.MM.yyyy HH:mm:ss' }}</td>
+                <td *ngIf="question.used == '1'" class="grayout">{{ question.id }}</td>
+                <td *ngIf="question.used == '1'" class="grayout">{{ question.text }}</td>
+                <td *ngIf="question.used == '1'" class="grayout">{{ question.type }}</td>
+                <td *ngIf="question.used == '1'" class="grayout"><span *ngIf="question.draw == '1'">{{ question.draw }}</span></td>
+                <td *ngIf="question.used == '1'" class="grayout">{{ question.created | date: 'dd.MM.yyyy HH:mm:ss' }}
+                </td>
+                <td *ngIf="question.used == '1'" class="grayout">{{ question.updated | date: 'dd.MM.yyyy HH:mm:ss' }}
+                </td>
+                <td>
+                    <button (click)="editQuestion(question.id)"><i class="fas fa-edit"></i></button>
+                    <button (click)="deleteQuestion(question.id)"><i class="fas fa-trash-alt"></i></button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>

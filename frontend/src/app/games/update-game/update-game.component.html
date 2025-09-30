@@ -1,0 +1,36 @@
+<div class="position-relative">
+    <app-sidebar [isSidebarCollapsed]="isSidebarCollapsed" (sidebarToggle)="onSidebarToggle()">
+    </app-sidebar>
+    <button class="sidebar-toggle-btn" [ngClass]="{ 'sidebar-collapsed': isSidebarCollapsed }"
+        (click)="onSidebarToggle()">
+        <i class="fas fa-bars"></i>
+    </button>
+</div>
+<div class="form-content-container">
+    <div class="form-group">
+        <label for="name">Name:</label>
+        <input class="text-input" type="text" id="name" [(ngModel)]="selectedName" />
+    </div>
+
+    <!-- <div class="form-group">
+        <label>
+            <input type="checkbox" [(ngModel)]="isChecked" />
+            Is active
+        </label>
+    </div> -->
+
+    <!-- <div class="form-group">
+        <label for="logo">Image:</label>
+        <input class="text-input" type="file" id="logo"
+            accept="image/gif, image/png, image/jpeg, image/jpg, image/jfif, image/webp, image/avif, image/scale"
+            (change)="handleLogoChange($event)" />
+    </div>
+
+    <div class="form-group" *ngIf="selectedLogo">
+        <img class="preview-image" src="{{file_link}}" />
+    </div> -->
+
+    <div class="form-group">
+        <button (click)="updateGame()">Update</button>
+    </div>
+</div>

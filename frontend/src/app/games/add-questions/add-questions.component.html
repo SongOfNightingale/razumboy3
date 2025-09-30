@@ -1,0 +1,52 @@
+<div class="position-relative">
+    <app-sidebar [isSidebarCollapsed]="isSidebarCollapsed" (sidebarToggle)="onSidebarToggle()">
+    </app-sidebar>
+    <button class="sidebar-toggle-btn" [ngClass]="{ 'sidebar-collapsed': isSidebarCollapsed }"
+        (click)="onSidebarToggle()">
+        <i class="fas fa-bars"></i>
+    </button>
+</div>
+<div class="questions-content-container">
+    <div class="search-content-container">
+        <label for="questionSearch">Search question name:</label>
+        <input id="questionSearch" [(ngModel)]="questionFilter" (input)="applyFilters()" />
+
+        <label for="typeFilter">Filter by type:</label>
+        <select id="typeFilter" [(ngModel)]="selectedType" (change)="applyFilters()">
+            <option value="">All types</option>
+            <option *ngFor="let type of uniqueTypes" [value]="type">{{ type }}</option>
+        </select>
+
+        <label for="assignFilter">Filter by assignment:</label>
+        <select id="assignFilter" [(ngModel)]="selectedAssign" (change)="applyFilters()">
+            <option value="">All types</option>
+            <option *ngFor="let assign of uniqueAssigns" [value]="assign">{{ assign }}</option>
+        </select>
+
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th (click)="sort('id')">Id <i [class]="getSortIcon('id')"></i></th>
+                <th (click)="sort('text')">Text <i [class]="getSortIcon('text')"></i></th>
+                <th (click)="sort('type')">Type <i [class]="getSortIcon('type')"></i></th>
+                <th (click)="sort('draw')">Разыгровка <i [class]="getSortIcon('draw')"></i></th>
+                <th (click)="sort('is_active')">Game assign <i [class]="getSortIcon('is_active')"></i></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let question of filteredQuestions; index as i">
+                <td>{{ question.id }}</td>
+                <td>{{ question.text }}</td>
+                <td>{{ question.type }}</td>
+                <td><span *ngIf="question.draw == '1'">{{ question.draw }}</span></td>
+                <td>
+                    <button *ngIf="question.is_active == '1'" (click)="removeFromGame(question, i)"><i
+                            class="fa-solid fa-square-minus" style="color: #ff0000;"></i></button>
+                    <button *ngIf="question.is_active == '0'" (click)="addToGame(question, i)"><i
+                            class="fa-solid fa-square-plus" style="color: #63E6BE;"></i></button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>

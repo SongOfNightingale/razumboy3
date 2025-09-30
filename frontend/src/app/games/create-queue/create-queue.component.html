@@ -1,0 +1,33 @@
+<div class="position-relative">
+  <app-sidebar-game [isSidebarCollapsed]="isSidebarCollapsed" (sidebarToggle)="onSidebarToggle()">
+  </app-sidebar-game>
+  <button class="sidebar-toggle-btn" [ngClass]="{ 'sidebar-collapsed': isSidebarCollapsed }"
+    (click)="onSidebarToggle()">
+    <i class="fas fa-bars"></i>
+  </button>
+</div>
+<div class="container">
+  <!-- LEFT: List -->
+  <div class="list-panel">
+    <h2 class="section-title">👥 Name List</h2>
+    <div cdkDropList [cdkDropListDisabled]="locked" (cdkDropListDropped)="drop($event)">
+      <mat-card *ngFor="let name of names; index as i" cdkDrag class="name-card" [class.locked]="locked">
+        {{ i+1 }}. {{ name }}
+      </mat-card>
+    </div>
+  </div>
+
+  <!-- RIGHT: Buttons -->
+  <div class="controls">
+    <h2 class="section-title">⚙️ Controls</h2>
+    <button mat-raised-button color="primary" (click)="randomizeList()" [disabled]="locked">
+      🔀 Randomize the List
+    </button>
+    <button mat-raised-button color="accent" (click)="saveList()" [disabled]="locked">
+      💾 Save (Lock) the List
+    </button>
+    <!-- <button mat-raised-button color="warn" (click)="resetList()">
+      ♻️ Reset / Unlock
+    </button> -->
+  </div>
+</div>

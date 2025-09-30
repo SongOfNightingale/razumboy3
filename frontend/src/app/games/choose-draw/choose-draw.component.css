@@ -1,0 +1,87 @@
+.draw-content-container {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    margin: 50px;
+}
+
+h2 {
+    color: #333;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    margin-left: 33%;
+    text-align: left;
+}
+
+input[type="radio"] {
+    margin-right: 5px;
+}
+
+button {
+    margin-top: 10px;
+    padding: 10px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.navigation-bar {
+    background-color: #ccc;
+    /* Set the background color of the navigation-bar */
+    height: 40px;
+    /* Set the height of the navigation-bar */
+    position: fixed;
+    /* Fix the navigation-bar position */
+    width: 100%;
+    /* Make the navigation-bar span the entire width */
+    top: 0;
+    /* Position it at the top */
+    z-index: 1000;
+    /* Set a high z-index to ensure it's above other elements */
+}
+
+.label-content-container {
+    display: flex;
+    justify-content: space-around;
+    /* Adjust as needed */
+    align-items: center;
+    height: 100%;
+}
+
+.label {
+    color: #333;
+    /* Set the text color of labels */
+    font-weight: bold;
+}
+
+.example-radio-group {
+    display: flex;
+    flex-direction: column;
+    margin: 15px 0;
+    align-items: flex-start;
+}
+
+.sidebar-toggle-btn {
+    position: absolute;
+    top: 1rem;
+    left: 200px;
+    background-color: #2c3e50;
+    border: none;
+    color: #fff;
+    padding: 0.5rem;
+    border-top-right-radius: 0.5rem;
+    border-bottom-right-radius: 0.5rem;
+    cursor: pointer;
+    z-index: 1001;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.sidebar-toggle-btn:hover {
+    background-color: #34495e;
+}
+
+.sidebar-toggle-btn.sidebar-collapsed {
+    left: 15px;
+}

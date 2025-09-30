@@ -1,0 +1,78 @@
+<div class="position-relative">
+    <app-sidebar-game [isSidebarCollapsed]="isSidebarCollapsed" (sidebarToggle)="onSidebarToggle()">
+    </app-sidebar-game>
+    <button class="sidebar-toggle-btn" [ngClass]="{ 'sidebar-collapsed': isSidebarCollapsed }"
+        (click)="onSidebarToggle()">
+        <i class="fas fa-bars"></i>
+    </button>
+</div>
+<!--<div class="battle-container">
+    <div class="battlefield">
+        <div class="grid">
+            <div class="row labels">
+                <div class="cell empty"></div>
+                <div class="cell" *ngFor="let col of columnLabels">{{ col }}</div>
+            </div>
+            <div class="row" *ngFor="let row of grid; let r = index">
+                <div class="cell label">{{ r + 1 }}</div>
+                <div class="cell" *ngFor="let cell of row" [ngClass]="cell.status" (click)="cellClicked(cell)"
+                    style="position: relative">
+                    <i *ngIf="cell.status === 'revealed-ship' && cell.icon" class="fas" [ngClass]="cell.icon"></i>
+                    
+                    <div *ngIf="cell.justRevealed" class="missile"></div>
+                    <div *ngIf="cell.justRevealed" class="explosion"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="list-panel">
+        <h2 class="section-title">👥 Name List</h2>
+        <div class="highlight-label">
+            🎯 Следующий ход: <strong>{{ names[highlightedIndex] }}</strong>
+        </div>
+        <div cdkDropList [cdkDropListDisabled]="locked">
+            <mat-card *ngFor="let name of names; index as i" cdkDrag class="name-card" [class.locked]="locked"
+                [class.highlighted]="i === highlightedIndex">
+                {{ i+1 }}. {{ name }}
+            </mat-card>
+        </div>
+    </div>
+</div>-->
+<div class="below-content">
+    <div class="time-content-container">
+        <!-- <label for="timeInput">Время на вопрос:</label><br> -->
+        <!-- <input id="timeInput" type="text" [(ngModel)]="timeInSeconds" /> -->
+        <label>Идёт вопрос {{questionNumber}}, оставшееся время <span class="timer">{{timeLeft}}</span></label>
+        <button (click)="pauseQuestions()"><i class="fa-solid fa-pause" style="color: #ff0000;"></i></button>
+        <button (click)="showBattlefield()">Показать поле боя</button>
+        <button (click)="showTable()">Показать таблицу</button>
+    </div>
+    <div class="categories-content-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>№</th>
+                    <th>Вопрос</th>
+                    <th>Количество ответов</th>
+                    <th>Запустить данный вопрос</th>
+                    <th>Посмотреть ответы команд</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let question of gameQuestions; index as i">
+                    <td>{{ i + 1 }}</td>
+                    <td>{{ question.text }}</td>
+                    <td>{{ question.answerNumber }}</td>
+                    <td>
+                        <button (click)="startQuestion(i+1)"><i class="fa-sharp fa-solid fa-circle-play"
+                                style="color: green;"></i></button>
+                    </td>
+                    <td>
+                        <button (click)="seeUserAnswers(question.id, i+1)"><i class="fa-solid fa-eye"
+                                style="color: blue;"></i></button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

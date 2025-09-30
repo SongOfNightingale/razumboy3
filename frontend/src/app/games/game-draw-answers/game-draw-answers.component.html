@@ -1,0 +1,38 @@
+<div class="position-relative">
+    <app-sidebar-game [isSidebarCollapsed]="isSidebarCollapsed" (sidebarToggle)="onSidebarToggle()">
+    </app-sidebar-game>
+    <button class="sidebar-toggle-btn" [ngClass]="{ 'sidebar-collapsed': isSidebarCollapsed }"
+        (click)="onSidebarToggle()">
+        <i class="fas fa-bars"></i>
+    </button>
+</div>
+<div class="full-width-buttons">
+    <button class="show-question-button full-width" (click)="showQuestion()">Отправить вопрос игрокам и на
+        экран</button>
+    <button class="show-answer-button full-width" (click)="showCorrectAnswer()">Показать правильный ответ</button>
+    <button class="user-answer-button full-width" (click)="showAnswers()">Ответы команд/Показать лого</button>
+</div>
+<div class="content-container">
+    <h2>Разыгровка</h2>
+    <br><br>
+    <h4>Ответ: {{drawAnswer}}</h4>
+    <!-- <h4>Зачёт: Ещё правильные ответы</h4> -->
+    <table>
+        <thead>
+            <tr>
+                <th>№</th>
+                <th>Команда</th>
+                <th>Ответ</th>
+                <th>Время</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let answer of userAnswers; index as i">
+                <td>{{i+1}}</td>
+                <td>{{ answer.team }}</td>
+                <td>{{ answer.text }}</td>
+                <td>{{ answer.time.substring(3, answer.time.length - 3) }}</td>
+            </tr>
+        </tbody>
+    </table>
+</div>

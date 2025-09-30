@@ -1,0 +1,10 @@
+<div class="header-content-container">
+    <div class="left-side">
+        <img class="logo" src="{{imagePath}}">        
+    </div>
+    <div class="right-side">
+        <label class="right-label" *ngIf="isDraw">Разыгровка</label>
+        <label class="right-label" *ngIf="!isDraw && (isPlayer || isHost) && timeLeft > 10">{{timeMessage}}</label>
+        <label class="right-label-time" *ngIf="!isDraw && (isPlayer || isHost) && timeLeft < 11 && timeLeft > 0">{{timeMessage}}</label>
+    </div>
+</div>

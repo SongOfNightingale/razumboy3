@@ -1,0 +1,40 @@
+.logo {
+    margin: 0;
+    padding: 0;
+    background-image: url('/assets/logo.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    height: 100vh;
+    /* 100% of viewport height */
+    width: 100vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;    
+    overflow-y: hidden;
+    overflow-x: hidden;
+}
+
+label {
+    color: #ffffff;
+    font-family: 'Nokia';
+    font-size: 30px;
+}
+
+.teamName {
+    position: absolute;
+    left: 50%;
+    bottom: 50px;
+    width: auto;
+    height: auto;
+    transform: translate(-50%, 50%);
+    text-align: center;
+}
+
+img {
+    min-width: 900px;
+    max-width: 1200px;
+    min-height: 900px;
+    max-height: 1200px;
+    
+}

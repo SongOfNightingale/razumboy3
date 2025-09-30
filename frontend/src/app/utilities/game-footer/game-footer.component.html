@@ -1,0 +1,6 @@
+<div class="footer-content">
+    <div class="right-side"  *ngIf="!isDraw">
+        <label class="right-label" *ngIf="timeLeft > 10">{{timeMessage}}</label>
+        <label class="right-label-time" *ngIf="timeLeft < 11 && timeLeft > 0">{{timeMessage}}</label>
+    </div>
+</div>

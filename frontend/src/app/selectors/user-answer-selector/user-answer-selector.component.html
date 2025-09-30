@@ -1,0 +1,29 @@
+<div class="all">
+    <div class="host-question-content-container" *ngIf="username == 'host'">
+        <label style="white-space: pre-line">{{question}}</label>
+    </div>
+    <div class="host-question-content-container">
+        <label>{{questionAnswer}}</label>
+    </div>
+    <div class="content-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>№</th>
+                    <th>{{teamMessage}}</th>
+                    <th>{{answerMessage}}</th>
+                    <th>{{timeMessage}}</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let answer of userAnswers; index as i">
+                    <td>{{i+1}}</td>
+                    <td>{{ answer.team }}</td>
+                    <td>{{ answer.text }}</td>
+                    <td>{{ answer.time.substring(3, answer.time.length - 3) }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

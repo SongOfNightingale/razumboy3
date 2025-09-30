@@ -1,0 +1,157 @@
+<div class="position-relative">
+    <app-sidebar [isSidebarCollapsed]="isSidebarCollapsed" (sidebarToggle)="onSidebarToggle()">
+    </app-sidebar>
+    <div class="sidebar-toggle-btn" [ngClass]="{ 'sidebar-collapsed': isSidebarCollapsed }" (click)="onSidebarToggle()">
+        <i class="fas fa-bars"></i>
+    </div>
+</div>
+<div *ngFor="let number of [0,1,2,3,4]; index as i" class="form-content-container">
+    <div class="form-group">
+        <label for="text">Text:</label>
+        <textarea id="text" [(ngModel)]="selectedText[i]"></textarea>
+    </div>
+
+    <div class="form-group">
+        <label for="image">Image:</label>
+        <input type="file" id="image"
+            accept="image/gif, image/png, image/jpeg, image/jpg, image/jfif, image/webp, image/avif, image/scale"
+            (change)="handleImageChange($event, i)" />
+    </div>
+
+    <div class="form-group" *ngIf="selectedImage[i]">
+        <img class="preview-image" src="{{image_link[i]}}" />
+    </div>
+
+    <div class="form-group">
+        <label for="audio">Audio:</label>
+        <input type="file" id="audio" accept="audio/mp3, audio/m4a, audio/mpeg" (change)="handleAudioChange($event, i)" />
+    </div>
+
+    <div class="form-group" *ngIf="selectedAudio[i]">
+        <audio controls>
+            <source src="{{audio_link[i]}}">
+        </audio>
+    </div>
+
+    <div class="form-group">
+        <label for="video">Video:</label>
+        <input type="file" id="video" accept="video/mp4, video/mov" (change)="handleVideoChange($event, i)" />
+    </div>
+
+    <div class="form-group" *ngIf="selectedVideo[i]">
+        <video width="320" height="240" type="video/mp4, video/mov" controls>
+            <source src="{{video_link[i]}}">
+        </video>
+    </div>
+
+    <div class="form-group">
+        <label for="comment">Comment:</label>
+        <textarea id="comment" [(ngModel)]="selectedComment[i]"></textarea>
+    </div>
+
+    <div class="form-group">
+        <label for="type">Type:</label>
+        <select id="type" [(ngModel)]="selectedType[i]">
+            <option *ngFor="let type of questionTypes" [value]="type.id">{{ type.name }}</option>
+        </select>
+        <div *ngIf="selectedType[i] === '1'" class="form-group">
+            <label for="answer">Answer:</label>
+            <input id="answer" [(ngModel)]="selectedAnswer[i]" />
+        </div>
+        <div *ngIf="selectedType[i] === '2'" class="form-group">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Answer:</th>
+                        <th>Is correct?</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let option of answerOptions[i]; let j = index">
+                        <td><input id="answer{{j}}" [(ngModel)]="option.answer" /></td>
+                        <td><input type="checkbox" id="answerCheckbox{{j}}" (change)="changeOption(j)"
+                                [(ngModel)]="option.checked" [checked]="option.checked" /></td>
+                        <td><button (click)="removeOption(j, i)">Remove option</button></td>
+                    </tr>
+                </tbody>
+            </table>
+            <button (click)="addOption(i)">Add option</button>
+        </div>
+        <div *ngIf="selectedType[i] === '3'" class="form-group">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Answer:</th>
+                        <th>Is correct?</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let option of answerOptions[i]; let j = index">
+                        <td><input id="answer{{j}}" [(ngModel)]="option.answer" /></td>
+                        <td><input type="checkbox" id="answerCheckbox{{j}}" (change)="changeOption(j)"
+                                [(ngModel)]="option.checked" [checked]="option.checked" /></td>
+                        <td><button (click)="removeOption(j, i)">Remove option</button></td>
+                    </tr>
+                </tbody>
+            </table>
+            <button (click)="addOption(i)">Add option</button>
+        </div>
+        <div *ngIf="selectedType[i] === '4'" class="form-group">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Answer:</th>
+                        <th>Points:</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let option of answerOptions[i]; let j = index">
+                        <td><input id="answer{{j}}" [(ngModel)]="option.answer" /></td>
+                        <td><input id="answerPoints{{j}}" [(ngModel)]="option.points" /></td>
+                        <td><button (click)="removeOption(j, i)">Remove option</button></td>
+                    </tr>
+                </tbody>
+            </table>
+            <button (click)="addOption(i)">Add option</button>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="image2">Картинка или видео к ответу:</label>
+        <input type="file" id="image2"
+            accept="image/gif, image/png, image/jpeg, image/jpg, image/jfif, image/webp, image/avif, image/scale, video/mp4, video/mov"
+            (change)="handleImageChange2($event, i)" />
+    </div>
+
+    <div class="form-group" *ngIf="selectedImage2[i]">
+        <img class="preview-image" src="{{image_link2[i]}}" />
+    </div>
+
+    <div class="form-group">
+        <label for="audio2">Музыка к ответу:</label>
+        <input type="file" id="audio2" accept="audio/mp3, audio/m4a" (change)="handleAudioChange2($event, i)" />
+    </div>
+
+    <div class="form-group" *ngIf="selectedAudio2[i]">
+        <audio controls>
+            <source src="{{audio_link2[i]}}">
+        </audio>
+    </div>
+
+    <div class="form-group">
+        Разыгровка
+        <input type="checkbox" [(ngModel)]="checked[i]" [checked]="checked[i]">
+    </div>
+
+    <div class="form-group">
+        <label for="time">Время на вопрос (в секундах):</label>
+        <input type="number" step="5" id="time" [(ngModel)]="time_to_answer[i]" />
+    </div>
+
+    <div class="form-group">
+        <button (click)="saveQuestion(i)">Save</button>
+    </div>
+</div>

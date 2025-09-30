@@ -1,0 +1,72 @@
+<div class="position-relative">
+  <app-sidebar-game [isSidebarCollapsed]="isSidebarCollapsed" (sidebarToggle)="onSidebarToggle()">
+  </app-sidebar-game>
+  <button class="sidebar-toggle-btn" [ngClass]="{ 'sidebar-collapsed': isSidebarCollapsed }"
+    (click)="onSidebarToggle()">
+    <i class="fas fa-bars"></i>
+  </button>
+</div>
+<div class="container">
+  <!-- 🟦 LEFT: GRID -->
+  <div class="grid-area">
+    <!-- Column Labels -->
+    <div class="labels-row">
+      <div class="corner-cell"></div>
+      <div *ngFor="let label of columnLabels" class="label-cell">
+        {{ label }}
+      </div>
+    </div>
+
+    <!-- Grid Rows -->
+    <div *ngFor="let row of rowLabels; let rowIndex = index" class="grid-row">
+      <div class="label-cell">{{ row }}</div>
+      <div *ngFor="let col of columnLabels; let colIndex = index" class="grid-cell"
+        [class.occupied]="grid[rowIndex][colIndex].occupiedBy" [class.locked]="grid[rowIndex][colIndex].isLocked"
+        (click)="onCellClick(grid[rowIndex][colIndex])">
+        <ng-container *ngIf="grid[rowIndex][colIndex].occupiedBy as shipId">
+          <img *ngIf="getShipById(shipId)?.icon" [src]="getShipById(shipId)?.icon" [ngClass]="getShipById(shipId)?.icon" width="24" height="24"/>
+          <i *ngIf="getShipById(shipId)?.icon; else defaultIcon" [ngClass]="getShipById(shipId)?.icon"
+            title="{{ getShipById(shipId)?.name }}"></i>
+          <ng-template #defaultIcon>
+            🚢
+          </ng-template>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+
+  <!-- 🚢 RIGHT: SHIP LIST & CONTROLS -->
+  <div class="sidebar">
+    <h3>Доступные корабли</h3>
+    <div class="ship-list">
+      <div *ngFor="let ship of ships" class="ship-item" [class.placed]="ship.placed" (click)="selectShip(ship)"
+        [title]="ship.name + ' (size ' + ship.size + ')'">
+        <div class="ship-icon">
+          <img *ngIf="ship.icon" [src]="ship.icon" [ngClass]="ship.icon" width="24" height="24"/>
+          <i *ngIf="ship.icon; else defaultIcon" [ngClass]="ship.icon"></i>
+          <ng-template #defaultIcon>
+            🚢
+          </ng-template>
+        </div>
+
+        <div class="ship-preview">
+          <div class="ship-block" *ngFor="let _ of [].constructor(ship.size)"></div>
+        </div>
+
+        <span class="ship-name">{{ ship.name }}</span>
+      </div>
+    </div>
+
+    <div class="buttons">
+      <button mat-raised-button color="primary" (click)="randomizeShips()" [disabled]="locked">
+        🔀 Случайный выбор
+      </button>
+      <button mat-raised-button color="accent" (click)="lockShips()" [disabled]="locked">
+        🔒 Заблокировать корабли и сохранить расположение в базе данных
+      </button>
+      <!-- <button mat-button color="warn" (click)="resetShips()" [disabled]="!locked">
+        🔁 Reset (Unlock)
+      </button> -->
+    </div>
+  </div>
+</div>

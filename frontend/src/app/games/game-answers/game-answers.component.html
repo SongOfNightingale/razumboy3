@@ -1,0 +1,49 @@
+<div class="position-relative">
+    <app-sidebar-game [isSidebarCollapsed]="isSidebarCollapsed" (sidebarToggle)="onSidebarToggle()">
+    </app-sidebar-game>
+    <button class="sidebar-toggle-btn" [ngClass]="{ 'sidebar-collapsed': isSidebarCollapsed }"
+        (click)="onSidebarToggle()">
+        <i class="fas fa-bars"></i>
+    </button>
+</div>
+<div class="full-width-buttons">
+    <button class="show-answer-button full-width" (click)="showCorrectAnswer()">Показать правильный ответ на
+        экране</button>
+    <button class="user-answer-button full-width" (click)="showAnswers()">Ответы команд Ведущему</button>
+    <button class="previous-next-button full-width" (click)="previousQuestion()" *ngIf="questionNumber > 1">Предыдущий
+        вопрос</button>
+    <button class="previous-next-button full-width" (click)="nextQuestion()"
+        *ngIf="questionNumber < questionAmount">Следующий вопрос</button>
+</div>
+<div class="content-container">
+    <h4>Вопрос {{questionNumber}}</h4>
+    <h4>{{question}}</h4>
+    <h4 *ngIf="questionType.toString() != '4'">Ответ: {{questionAnswer}}</h4>
+    <h4 *ngIf="questionType.toString() == '4'">Ответ: {{geolocationAnswer}}</h4>
+    <!-- <h4><input type="checkbox" [disabled]="isDisabled" [(ngModel)]="isSpecial" [checked]="isSpecial" (change)="changeOption()"/>Особый тур?</h4> -->
+    <table>
+        <thead>
+            <tr>
+                <th>№</th>
+                <th>Команда</th>
+                <th>Ответы</th>
+                <th>Время</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let answer of userAnswers; index as i">
+                <td>{{i+1}}</td>
+                <td>{{ answer.team }}</td>
+                <td>{{ answer.text }}</td>
+                <td>{{ answer.time }}</td>
+                <td>
+                    <button *ngIf="answer.is_correct == '1'" (click)="markIncorrect(answer)"><i
+                            class="fa-solid fa-square-minus" style="color: #ff0000;"></i></button>
+                    <button *ngIf="answer.is_correct == '0'" (click)="markCorrect(answer)"><i
+                            class="fa-solid fa-square-plus" style="color: #63E6BE;"></i></button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>

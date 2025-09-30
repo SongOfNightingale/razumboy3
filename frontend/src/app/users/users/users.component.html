@@ -1,0 +1,41 @@
+<div class="position-relative">
+    <app-sidebar [isSidebarCollapsed]="isSidebarCollapsed" (sidebarToggle)="onSidebarToggle()">
+    </app-sidebar>
+    <button class="sidebar-toggle-btn" [ngClass]="{ 'sidebar-collapsed': isSidebarCollapsed }"
+        (click)="onSidebarToggle()">
+        <i class="fas fa-bars"></i>
+    </button>
+</div>
+<div class="users-content-container">
+    <div class="search-content-container">
+        <label for="usernameSearch">Search Username:</label>
+        <input id="usernameSearch" [(ngModel)]="usernameFilter" (input)="applyFilters()" />
+
+        <label for="roleFilter">Filter by Role:</label>
+        <select id="roleFilter" [(ngModel)]="selectedRole" (change)="applyFilters()">
+            <option value="">All Roles</option>
+            <option *ngFor="let role of uniqueRoles" [value]="role">{{ role }}</option>
+        </select>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th (click)="sort('id')">Id <i [class]="getSortIcon('id')"></i></th>
+                <th (click)="sort('username')">Username <i [class]="getSortIcon('username')"></i></th>
+                <th (click)="sort('role')">Role <i [class]="getSortIcon('role')"></i></th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let user of filteredUsers">
+                <td>{{ user.id }}</td>
+                <td>{{ user.username }}</td>
+                <td>{{ user.role }}</td>
+                <td>
+                    <button (click)="editUser(user)"><i class="fas fa-edit"></i></button>
+                    <button (click)="deleteUser(user.username)"><i class="fas fa-trash-alt"></i></button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>

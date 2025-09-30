@@ -1,0 +1,133 @@
+.navigation-bar {
+    background-color: #ccc;
+    /* Set the background color of the navigation-bar */
+    height: 40px;
+    /* Set the height of the navigation-bar */
+    position: fixed;
+    /* Fix the navigation-bar position */
+    width: 100%;
+    /* Make the navigation-bar span the entire width */
+    top: 0;
+    /* Position it at the top */
+    z-index: 1000;
+    /* Set a high z-index to ensure it's above other elements */
+}
+
+.label-content-container {
+    display: flex;
+    justify-content: space-around;
+    /* Adjust as needed */
+    align-items: center;
+    height: 100%;
+}
+
+.label {
+    color: #333;
+    /* Set the text color of labels */
+    font-weight: bold;
+}
+
+.users-content-container {
+    max-width: 1200px;
+    margin: 20px auto;
+    margin-top: 50px;
+    margin-bottom: 90px;
+}
+
+.search-content-container {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: 20px;
+    margin-top: 50px;
+}
+
+.search-content-container label {
+    margin-right: 10px;
+    font-weight: bold;
+}
+
+.search-content-container input,
+.search-content-container select {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-right: 10px;
+}
+
+.search-content-container select {
+    min-width: 150px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+th,
+td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: center;
+}
+
+th {
+    background-color: #f2f2f2;
+    cursor: pointer;
+}
+
+th i {
+    margin-left: 5px;
+}
+
+th i.fa-sort-up {
+    color: #007bff;
+}
+
+th i.fa-sort-down {
+    color: #dc3545;
+}
+
+.actions-button {
+    display: flex;
+    justify-content: space-around;
+}
+
+.actions-button button {
+    padding: 8px 12px;
+    background-color: #28a745;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 5px;
+}
+
+.actions-button button:hover {
+    background-color: #218838;
+}
+
+.sidebar-toggle-btn {
+    position: absolute;
+    top: 1rem;
+    left: 200px;
+    background-color: #2c3e50;
+    border: none;
+    color: #fff;
+    padding: 0.5rem;
+    border-top-right-radius: 0.5rem;
+    border-bottom-right-radius: 0.5rem;
+    cursor: pointer;
+    z-index: 1001;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.sidebar-toggle-btn:hover {
+    background-color: #34495e;
+}
+
+.sidebar-toggle-btn.sidebar-collapsed {
+    left: 15px;
+}

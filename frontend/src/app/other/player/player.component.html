@@ -1,0 +1,8 @@
+<app-game-header *ngIf="questionEnabled || mediaQuestionEnabled" [screenCommand] = "screenCommand" class="sticky"></app-game-header>
+<div *ngIf="logoEnabled"><app-logo [screenCommand] = "screenCommand"></app-logo></div>
+<div *ngIf="questionEnabled"><app-question-player-selector [screenCommand] = "screenCommand"></app-question-player-selector></div>
+<div *ngIf="mediaQuestionEnabled"><app-media-question-player-selector [screenCommand] = "screenCommand"></app-media-question-player-selector></div>
+<div *ngIf="scoreEnabled"><app-score-selector [screenCommand] = "screenCommand"></app-score-selector></div>
+<div *ngIf="battlefieldEnabled"><app-player-battlefield-selector [screenCommand] = "screenCommand"></app-player-battlefield-selector></div>
+<!-- <app-game-footer *ngIf="questionEnabled || mediaQuestionEnabled" [screenCommand] = "screenCommand"></app-game-footer> -->
+<!-- <div *ngIf="adEnabled"></div> -->

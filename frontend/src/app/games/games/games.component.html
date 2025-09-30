@@ -1,0 +1,53 @@
+<div class="position-relative">
+    <app-sidebar [isSidebarCollapsed]="isSidebarCollapsed" (sidebarToggle)="onSidebarToggle()">
+    </app-sidebar>
+    <button class="sidebar-toggle-btn" [ngClass]="{ 'sidebar-collapsed': isSidebarCollapsed }"
+      (click)="onSidebarToggle()">
+      <i class="fas fa-bars"></i>
+    </button>
+  </div>
+<div class="games-content-container">
+    <div class="search-content-container">
+        <label for="gameSearch">Search game name:</label>
+        <input id="gameSearch" [(ngModel)]="gameFilter" (input)="applyFilters()" />
+
+        <label for="typeFilter">Filter by type:</label>
+        <select id="typeFilter" [(ngModel)]="selectedType" (change)="applyFilters()">
+            <option value="">All types</option>
+            <option value="1">Active</option>
+            <option value="0">Not active</option>
+        </select>
+        
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th (click)="sort('id')">Id <i [class]="getSortIcon('id')"></i></th>
+                <th (click)="sort('name')">Name <i [class]="getSortIcon('name')"></i></th>
+                <th (click)="sort('is_active')">Is active <i [class]="getSortIcon('is_active')"></i></th>
+                <th (click)="sort('created')">Created <i [class]="getSortIcon('created')"></i></th>
+                <th (click)="sort('updated')">Updated <i [class]="getSortIcon('updated')"></i></th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let game of filteredGames">
+                <td>{{ game.id }}</td>
+                <td>{{ game.name }}</td>
+                <td>{{ game.is_active }}</td>
+                <td>{{ game.created | date: 'dd.MM.yyyy HH:mm:ss' }}</td>
+                <td>{{ game.updated | date: 'dd.MM.yyyy HH:mm:ss' }}</td>
+                <td>
+                    <button (click)="startGame(game)"><i class="fas fa-play"></i></button>
+                    <button (click)="gameQuestions(game)"><i class="fas fa-question-circle"></i></button>
+                    <button (click)="gameUsers(game)"><i class="fas fa-user"></i></button>
+                    <button (click)="gamePenalties(game)"><i class="fas fa-minus-circle"></i></button>
+                    <button (click)="cloneGame(game)"><i class="fas fa-clone"></i></button>
+                    <button (click)="editGame(game)"><i class="fas fa-edit"></i></button>
+                    <button (click)="deleteGame(game)"><i class="fas fa-trash-alt"></i></button>
+                    <button (click)="stopGame(game)"><i class="fa-solid fa-stop"></i></button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>

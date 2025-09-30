@@ -1,0 +1,43 @@
+/* Add these styles to your global styles.css or component-specific CSS file */
+
+/* Center the dialog content */
+.mat-dialog-content {
+    text-align: center;
+}
+
+/* Style the dialog title */
+.mat-dialog-title {
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+    /* Darken the text color */
+    margin-bottom: 20px;
+    /* Add space below the title */
+}
+
+/* Style the dialog actions */
+.mat-dialog-actions {
+    justify-content: center;
+    /* Center align the actions */
+}
+
+/* Style the OK button */
+.mat-dialog-actions button {
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    border-radius: 5px;
+    background-color: #4CAF50;
+    /* Green background color */
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    /* Smooth transition for hover effect */
+}
+
+/* Hover effect for the OK button */
+.mat-dialog-actions button:hover {
+    background-color: #45a049;
+    /* Darker green on hover */
+}
