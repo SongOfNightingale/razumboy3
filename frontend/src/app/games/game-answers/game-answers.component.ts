@@ -29,6 +29,7 @@ export class GameAnswersComponent {
   subscription: any;
 
   questionNumber: any;
+  question_points: any;
 
   pointCorrect: string = '1';
   pointIncorrect: string = '0';
@@ -56,6 +57,14 @@ export class GameAnswersComponent {
         this.questionId = localStorage.getItem("currentQuestionId");
       }
       this.questionNumber = localStorage.getItem("questionNumber");
+      this.question_points = localStorage.getItem("questionPoints");
+      if (this.question_points == 3) {
+        this.pointCorrect = '3';
+      }
+      else if (this.question_points == 5) {
+        this.pointCorrect = '5';
+        this.pointIncorrect = '-5';
+      }
       this.settingsService.get_numbers().subscribe((response4: any) => {
         this.jackpotNumber = response4[0].o_number;
         console.log(response4[0]);

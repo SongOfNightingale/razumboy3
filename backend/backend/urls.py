@@ -64,6 +64,7 @@ urlpatterns = [
 
     path('get_current_results', myapp.views.get_current_results),
     path('save_result', myapp.views.save_result),
+    path('save_initial_result', myapp.views.save_initial_result),
     path('update_result', myapp.views.update_result),
 
     path('get_user_answers', myapp.views.get_user_answers),

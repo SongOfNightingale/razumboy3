@@ -376,3 +376,7 @@ th i.fa-sort-down {
 .cell.revealed-unknown {
   background-color: #28a745;
 }
+
+.cell.revealed-carrier {
+  background-color: #000000;
+}

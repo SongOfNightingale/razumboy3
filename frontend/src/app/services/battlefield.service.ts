@@ -31,25 +31,26 @@ export class BattlefieldService {
     });
   }
 
-  saveQueue(game: any, name: any, order: any, current: any) {
+  saveQueue(gameId: number, reversedNames: string[], highlightedIndex: number) {
     const create_url = environment.backend + "save_queue";
-    let parameters = new HttpParams().append('game_id', game);
-    parameters = parameters.append('name', name);
-    parameters = parameters.append('order', order);
-    parameters = parameters.append('current', current);
-    return this.http.get(create_url, {params:parameters});
+    return this.http.post(create_url, {
+      game_id: gameId,
+      names: reversedNames,
+      current: highlightedIndex
+    });
   }
+
 
   save_current(game: any, current: any) {
     const create_url = environment.backend + "save_current";
     let parameters = new HttpParams().append('game_id', game);
     parameters = parameters.append('current', current);
-    return this.http.get(create_url, {params:parameters});
+    return this.http.get(create_url, { params: parameters });
   }
 
   getQueue(game: any) {
     const create_url = environment.backend + "get_queue";
     let parameters = new HttpParams().append('game_id', game);
-    return this.http.get(create_url, {params:parameters});
+    return this.http.get(create_url, { params: parameters });
   }
 }

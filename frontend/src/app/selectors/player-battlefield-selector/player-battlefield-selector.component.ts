@@ -10,9 +10,10 @@ interface Cell {
   isShip: boolean;
   shipId?: string;
   icon?: string;
-  status?: 'hidden' | 'revealed-water' | 'revealed-ship' | 'hit-sunk' | 'revealed-unknown' | 'revealed-unknown';
+  status?: 'hidden' | 'revealed-water' | 'revealed-ship' | 'hit-sunk' | 'revealed-unknown' | 'revealed-carrier';
   justRevealed: boolean;
   type: string;
+  selected?: boolean;
 }
 
 
@@ -62,8 +63,9 @@ export class PlayerBattlefieldSelectorComponent {
     this.fleetService.getQueue(this.gameId).subscribe((response: any) => {
       var currentId;
       console.log(response);
+      response.sort((a: any, b: any) => a.order - b.order);
       for (let i = 0; i < response.length; i++) {
-        if (response[i].current == i) {
+        if (this.highlightedIndex == i) {
           currentId = response[i].id;
         }
       }
@@ -96,10 +98,20 @@ export class PlayerBattlefieldSelectorComponent {
           isShip: false,
           status: 'hidden',
           justRevealed: false,
-          type: ''
+          type: '',
+          selected: false
         });
       }
       this.grid.push(rowCells);
+    }
+  }
+
+  clearSelection() {
+    if (this.savedCell) {
+      const prev = this.savedCell;
+      if (this.grid[prev.row] && this.grid[prev.row][prev.col]) {
+        this.grid[prev.row][prev.col].selected = false;
+      }
     }
   }
 
@@ -108,7 +120,14 @@ export class PlayerBattlefieldSelectorComponent {
       this.ships = data.ships_data.map((ship: any) => {
         return {
           ...ship,
-          parsedCells: ship.cells.map((coord: string) => this.coordToCell(coord)),
+          parsedCells: ship.cells.map((c: any) => {
+            const cell = this.coordToCell(c.coord);
+            return {
+              ...cell,
+              status: c.status,
+              revealed: c.revealed
+            };
+          }),
           revealed_cells: ship.revealed_cells || []
         };
       });
@@ -142,8 +161,8 @@ export class PlayerBattlefieldSelectorComponent {
         const gridCell = this.grid[cell.row][cell.col];
         gridCell.isShip = true;
         gridCell.shipId = ship.id;
-        gridCell.revealed = ship.revealed_cells.includes(this.cellToCoord(cell.row, cell.col));
-        gridCell.status = gridCell.revealed ? 'revealed-ship' : 'hidden';
+        gridCell.revealed = cell.revealed;
+        gridCell.status = cell.status;
         gridCell.type = ship.type;
         if (ship.type === 'additional') {
           gridCell.icon = ship.icon || 'fa-bolt';
@@ -169,7 +188,11 @@ export class PlayerBattlefieldSelectorComponent {
   }
 
   saveCell(cell: Cell) {
+    this.clearSelection();
+
     this.savedCell = cell;
+    cell.selected = true;
+
     this.answer = '';
     this.answer = this.getCellLabel(cell.row, cell.col);
   }
@@ -183,264 +206,10 @@ export class PlayerBattlefieldSelectorComponent {
   }
 
   cellClicked(cell: Cell) {
-    //this.disabled = true;
+    this.clearSelection();
+    this.disabled = true;
+
     this.commandService.set_command(this.clickedRow.toString() + "," + this.clickedCol.toString(), 8).subscribe((response3: any) => {
-    });
-    /* if (cell.revealed) return;
-
-    cell.revealed = true;
-
-
-    if (cell.isShip && cell.shipId) {
-      cell.status = 'revealed-ship';
-
-      const ship = this.ships.find(s => s.id === cell.shipId);
-      this.markShipCellRevealed(cell.shipId, cell.row, cell.col);
-
-      if (ship?.type === 'additional') {
-        cell.icon = ship.icon || 'fa-bolt'; // show icon immediately
-      }
-
-      // 🎯 Play missile and explosion on first hit
-      cell.justRevealed = true;
-
-      // Remove animation after it's done
-      setTimeout(() => {
-        cell.justRevealed = false;
-      }, 800);
-
-      if (ship?.name === 'Carrier') {
-        const shipIsSunk = this.isShipSunk(ship.id);
-
-        if (!shipIsSunk) {
-          this.moveCarrierRemainingParts(ship);
-        } else {
-          this.markSunk(ship.id);
-          this.revealSurroundingWater(ship.id);
-        }
-      } else if (ship?.name === 'Эхолот') {
-        this.markSunk(ship.id);
-        this.revealSpecialSurroundings(cell.row, cell.col);
-      }
-      else {
-        if (this.isShipSunk(ship.id)) {
-          this.markSunk(ship.id);
-          this.revealSurroundingWater(ship.id);
-        }
-      }
-      //this.updateScore(ship.type, ship.name, this.isShipSunk(ship.id));
-    } else {
-      cell.status = 'revealed-water';
-      const coord = `${this.columnLabels[cell.col]}${cell.row + 1}`;
-      this.revealedWater.add(coord);
-      //this.moveHighlight(1, false);
-    }
-
-    // if (this.isShipSunk(cell.shipId)) {
-    //   this.markSunk(cell.shipId);
-    //   this.revealSurroundingWater(cell.shipId);
-    // }
-    // else {
-    //   cell.status = 'revealed-water';
-    //   const coord = `${this.columnLabels[cell.col]}${cell.row + 1}`;
-    //   this.revealedWater.add(coord);
-    // }
-    this.saveUpdatedFleet();*/
-  }
-
-  markShipCellRevealed(shipId: string, row: number, col: number) {
-    const ship = this.ships.find(s => s.id === shipId);
-    const coord = this.cellToCoord(row, col);
-    if (ship && !ship.revealed_cells.includes(coord)) {
-      ship.revealed_cells.push(coord);
-    }
-  }
-
-  isShipSunk(shipId: string): boolean {
-    const ship = this.ships.find(s => s.id === shipId);
-    if (!ship || !ship.parsedCells) return false;
-
-    return ship.parsedCells.every((cell: any) => {
-      const coord = this.cellToCoord(cell.row, cell.col);
-      return ship.revealed_cells.includes(coord);
-    });
-  }
-
-  moveCarrierRemainingParts(ship: any) {
-
-    const remainingCells = ship.parsedCells.filter((cell: any) => {
-      const coord = this.cellToCoord(cell.row, cell.col);
-      return !ship.revealed_cells.includes(coord);
-    });
-    const remainingSize = remainingCells.length;
-    if (remainingSize === 0) return;
-
-    // Remove old positions of remaining parts from the grid
-    // for (const cell of remainingCells) {
-    //   this.grid[cell.row][cell.col].isShip = false;
-    //   this.grid[cell.row][cell.col].shipId = undefined;
-    //   this.grid[cell.row][cell.col].status = 'hidden';
-    //   this.grid[cell.row][cell.col].icon = undefined;
-    // }
-
-    // Try to find a valid position for the remaining parts
-    const directions: ('horizontal' | 'vertical')[] = ['horizontal', 'vertical'];
-    const maxAttempts = 100;
-
-    for (let attempt = 0; attempt < maxAttempts; attempt++) {
-      const direction = directions[Math.floor(Math.random() * directions.length)];
-      const startRow = Math.floor(Math.random() * 15);
-      const startCol = Math.floor(Math.random() * 15);
-
-      const newCells: { row: number, col: number }[] = [];
-
-      let valid = true;
-      for (let i = 0; i < remainingSize; i++) {
-        const row = direction === 'horizontal' ? startRow : startRow + i;
-        const col = direction === 'horizontal' ? startCol + i : startCol;
-
-        if (row >= 15 || col >= 15) {
-          valid = false;
-          break;
-        }
-
-        const cell = this.grid[row][col];
-        if (cell.isShip) {
-          valid = false;
-          break;
-        }
-
-        // Check surrounding 8 cells
-        for (let dr = -1; dr <= 1; dr++) {
-          for (let dc = -1; dc <= 1; dc++) {
-            const nr = row + dr;
-            const nc = col + dc;
-            if (
-              nr >= 0 && nr < 15 &&
-              nc >= 0 && nc < 15 &&
-              this.grid[nr][nc].isShip
-            ) {
-              valid = false;
-            }
-          }
-        }
-
-        newCells.push({ row, col });
-      }
-
-      if (valid) {
-        // Update ship's parsedCells and string coords
-        const revealedCells = ship.parsedCells.filter((cell: any) => {
-          const coord = this.cellToCoord(cell.row, cell.col);
-          return ship.revealed_cells.includes(coord);
-        });
-
-        for (const cell of remainingCells) {
-          const gCell = this.grid[cell.row][cell.col];
-          gCell.isShip = false;
-          gCell.shipId = undefined;
-          gCell.status = 'hidden';
-          gCell.icon = undefined;
-        }
-
-        ship.parsedCells = [...revealedCells, ...newCells];
-
-        ship.cells = ship.parsedCells.map((c: any) => this.cellToCoord(c.row, c.col));
-
-        // Update grid
-        for (const cell of newCells) {
-          const gCell = this.grid[cell.row][cell.col];
-          gCell.isShip = true;
-          gCell.shipId = ship.id;
-          gCell.revealed = false;
-          gCell.status = 'hidden';
-        }
-
-        this.saveUpdatedFleet();
-        return;
-      }
-    }
-
-    console.warn("No valid new position found for escaping Carrier");
-  }
-
-  markSunk(shipId: string) {
-    const ship = this.ships.find(s => s.id === shipId);
-    if (!ship || !ship.parsedCells) return;
-
-    // Skip animation/styling for additional ships
-    if (ship.type === 'additional') return;
-
-    for (const cell of ship.parsedCells) {
-      const gridCell = this.grid[cell.row][cell.col];
-      gridCell.status = 'hit-sunk';
-    }
-  }
-
-  revealSurroundingWater(shipId: string) {
-    const ship = this.ships.find(s => s.id === shipId);
-    if (!ship || !ship.parsedCells) return;
-
-    const directions = [-1, 0, 1];
-
-    for (const cell of ship.parsedCells) {
-      for (let dr of directions) {
-        for (let dc of directions) {
-          const r = cell.row + dr;
-          const c = cell.col + dc;
-          if (
-            r >= 0 && r < 15 && c >= 0 && c < 15 &&
-            !this.grid[r][c].isShip &&
-            !this.grid[r][c].revealed
-          ) {
-            this.grid[r][c].revealed = true;
-            this.grid[r][c].status = 'revealed-water';
-            const coord = this.cellToCoord(r, c);
-            this.revealedWater.add(coord);
-          }
-        }
-      }
-    }
-  }
-
-  revealSpecialSurroundings(row: number, col: number): void {
-    for (let dx = -1; dx <= 1; dx++) {
-      for (let dy = -1; dy <= 1; dy++) {
-        const nr = row + dx;
-        const nc = col + dy;
-
-        if (nr >= 0 && nr < 15 && nc >= 0 && nc < 15) {
-          const neighborCell = this.grid[nr][nc];
-
-          // Reveal only if hidden
-          if (neighborCell.status === 'hidden') {
-            if (!neighborCell.isShip) {
-              // Water
-              neighborCell.status = 'revealed-water';
-            } else {
-              // Occupied by some ship – reveal as "unknown ship" (special color)
-              neighborCell.status = 'revealed-unknown';
-            }
-          }
-        }
-      }
-    }
-  }
-
-  saveUpdatedFleet() {
-    const serializedShips = this.ships.map(ship => ({
-      id: ship.id,
-      name: ship.name,
-      type: ship.type,
-      direction: ship.direction,
-      size: ship.size,
-      cells: ship.parsedCells.map((c: any) => this.cellToCoord(c.row, c.col)),
-      revealed_cells: ship.revealed_cells,
-      icon: ship.icon || 'fa-bolt'
-    }));
-    this.fleetService.updateFleetLayout(this.gameId, serializedShips, Array.from(this.revealedWater).join(',')).subscribe(response => {
-      this.commandService.set_command("battlefield," + this.gameId + "," + this.highlightedIndex + "," + Math.random(), 3).subscribe((response3: any) => {
-      });
     });
   }
 }

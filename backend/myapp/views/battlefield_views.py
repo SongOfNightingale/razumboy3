@@ -79,24 +79,23 @@ def update_fleet_layout(request):
 
 @csrf_exempt
 def save_queue(request):
-    if request.method == "GET":
+    if request.method == "POST":
         try:
-            game_id = request.GET.get("game_id")
-            name = request.GET.get("name")
-            order = request.GET.get("order")
-            current = request.GET.get("current")
-            game = Game.objects.get(pk=game_id)
-            username = User.objects.get(username = name)
-            layout = Queue.objects.filter(game=game, team = username).first()
-            if not layout:
-                new_data = Queue(game = game, team = username, order = order, current = current)
-                new_data.save()
-                return JsonResponse([], safe=False)
-            else:
-                layout.order = order
-                layout.save()
-                return JsonResponse([], safe=False)
+            body = json.loads(request.body.decode("utf-8"))
+            game_id = body.get("game_id")
+            names = body.get("names", [])
+            current = body.get("current")
 
+            game = Game.objects.get(pk=game_id)
+
+            for order, name in enumerate(names):
+                username = User.objects.get(username=name)
+                layout, created = Queue.objects.get_or_create(game=game, team=username)
+                layout.order = order + 1
+                layout.current = current
+                layout.save()
+
+            return JsonResponse({"status": "ok"})
         except Exception as e:
             return JsonResponse({"message": str(e)}, status=500)
 

@@ -28,6 +28,7 @@
                 <th>Команда</th>
                 <th>Ответы</th>
                 <th>Время</th>
+                <th>Очки</th>
                 <th></th>
             </tr>
         </thead>
@@ -37,6 +38,7 @@
                 <td>{{ answer.team }}</td>
                 <td>{{ answer.text }}</td>
                 <td>{{ answer.time }}</td>
+                <td>{{ answer.points }}</td>
                 <td>
                     <button *ngIf="answer.is_correct == '1'" (click)="markIncorrect(answer)"><i
                             class="fa-solid fa-square-minus" style="color: #ff0000;"></i></button>

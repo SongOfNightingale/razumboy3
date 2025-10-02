@@ -74,7 +74,8 @@ export class CreateBattlefieldComponent {
 
           ship.placed = true;
           ship.direction = saved.direction;
-          ship.cells = saved.cells.map((coord: any) => {
+          ship.cells = saved.cells.map((cellObj: any) => {
+            const coord = cellObj.coord; // e.g. "A1"
             const colLetter = coord[0];
             const rowNumber = parseInt(coord.slice(1), 10);
             const col = colLabels.indexOf(colLetter);
@@ -297,7 +298,7 @@ export class CreateBattlefieldComponent {
     type: 'standard' | 'additional';
     size: number;
     direction: 'horizontal' | 'vertical';
-    cells: string[];
+    cells: { coord: string; status: string; revealed: boolean }[];
     icon: string;
   }[] {
     const colLabels = this.columnLabels;
@@ -310,7 +311,11 @@ export class CreateBattlefieldComponent {
         type: ship.id.startsWith('additional-') ? 'additional' : 'standard',
         size: ship.size,
         direction: ship.direction,
-        cells: ship.cells!.map(c => `${colLabels[c.col]}${c.row + 1}`),
+        cells: ship.cells!.map(c => ({
+          coord: `${colLabels[c.col]}${c.row + 1}`,
+          status: 'hidden',      // 👈 default when locking ships
+          revealed: false        // 👈 not revealed yet
+        })),
         icon: ship.icon || 'fa-bolt'
       }));
   }

@@ -71,11 +71,9 @@ export class CreateQueueComponent {
     this.savedList = [...this.names];
     this.locked = true;
 
-    for (let i = 0; i < this.savedList.length; i++) {
-      this.battlefieldService.saveQueue(this.gameId, this.savedList[i], i + 1, '0').subscribe(response => {
+    this.battlefieldService.saveQueue(this.gameId, this.savedList, 0).subscribe(response => {
 
-      });
-    }
+    });
   }
 
   resetList() {

@@ -14,7 +14,7 @@ interface Cell {
   isShip: boolean;
   shipId?: string;
   icon?: string;
-  status?: 'hidden' | 'revealed-water' | 'revealed-ship' | 'hit-sunk' | 'revealed-unknown';
+  status?: 'hidden' | 'revealed-water' | 'revealed-ship' | 'hit-sunk' | 'revealed-unknown' | 'revealed-carrier';
   justRevealed: boolean;
 }
 
@@ -77,11 +77,15 @@ export class ShowBattlefieldComponent {
 
   isSidebarCollapsed = false;
 
-  double_barrel = false;
+  doubleBarrelActive: boolean = false;   // tracks if Двустволка was triggered
+  doubleBarrelMoves: number = 0;
+  doubelBarrelMoveHighlight: number = 0;
 
   screenCommand: string = '';
   clickedRow: any;
   clickedCol: any;
+
+  lastAction: string = '';
 
   onSidebarToggle() {
     this.isSidebarCollapsed = !this.isSidebarCollapsed;
@@ -96,7 +100,6 @@ export class ShowBattlefieldComponent {
           this.clickedRow = splitted[0];
           this.clickedCol = splitted[1];
           if (this.wasCellClicked(this.clickedRow, this.clickedCol)) {
-
           }
           else {
             this.cellClicked(this.getCell(parseInt(this.clickedRow), parseInt(this.clickedCol)));
@@ -145,7 +148,8 @@ export class ShowBattlefieldComponent {
         }
         else {
           console.log(response);
-          this.highlightedIndex = response[0].current;
+          response.sort((a: any, b: any) => a.order - b.order);
+          //this.highlightedIndex = response[0].current;
           for (let i = 0; i < response.length; i++) {
             this.originalList.push(response[i].username);
             this.originalListId.push(response[i].id);
@@ -156,17 +160,22 @@ export class ShowBattlefieldComponent {
         }
         this.questionService.get_all_game_questions().subscribe((response2: any) => {
           this.gameQuestions = response2;
+          for (let i = 0; i < this.gameQuestions.length; i++) {
+            this.gameQuestions[i].is_played = false;
+            this.gameQuestions[i].points = 1;
+          }
         });
       });
     });
   }
 
-  seeUserAnswers(id: any, index: any) {
+  seeUserAnswers(id: any, index: any, points: any) {
     // clearInterval(this.timerInterval);
     // clearInterval(this.timerInterval2);
     var type = '';
     localStorage.setItem("currentQuestionId", id);
     localStorage.setItem("questionNumber", index);
+    localStorage.setItem("questionPoints", points);
     // this.sharedService.setData(id);
     // this.router.navigate(['/game-answers']);
     window.open('/game-answers', '_blank');
@@ -233,7 +242,7 @@ export class ShowBattlefieldComponent {
 
   startCurrentQuestion(questionNumber: any) {
     var isMedia = "";
-
+    this.gameQuestions[questionNumber - 1].is_played = true;
     var question = this.gameQuestions[questionNumber - 1];
     if (question.image_link || question.audio_link || question.video_link) { isMedia = "media_question"; }
     else { isMedia = "question"; }
@@ -313,7 +322,14 @@ export class ShowBattlefieldComponent {
       this.ships = data.ships_data.map((ship: any) => {
         return {
           ...ship,
-          parsedCells: ship.cells.map((coord: string) => this.coordToCell(coord)),
+          parsedCells: ship.cells.map((c: any) => {
+            const cell = this.coordToCell(c.coord);
+            return {
+              ...cell,
+              status: c.status,
+              revealed: c.revealed
+            };
+          }),
           revealed_cells: ship.revealed_cells || []
         };
       });
@@ -340,19 +356,12 @@ export class ShowBattlefieldComponent {
 
   placeShipsOnGrid() {
     for (const ship of this.ships) {
-      // ship.cells = ship.cells.map((coord: any) => {
-      //   const colLetter = coord[0];
-      //   const rowNumber = parseInt(coord.slice(1), 10);
-      //   const col = this.columnLabels.indexOf(colLetter);
-      //   const row = rowNumber - 1;
-      //   return { row, col };
-      // });
       for (const cell of ship.parsedCells) {
         const gridCell = this.grid[cell.row][cell.col];
         gridCell.isShip = true;
         gridCell.shipId = ship.id;
-        gridCell.revealed = ship.revealed_cells.includes(this.cellToCoord(cell.row, cell.col));
-        gridCell.status = gridCell.revealed ? 'revealed-ship' : 'hidden';
+        gridCell.revealed = cell.revealed;
+        gridCell.status = cell.status;
         if (ship.type === 'additional') {
           gridCell.icon = ship.icon || 'fa-bolt';
         }
@@ -377,6 +386,9 @@ export class ShowBattlefieldComponent {
 
     cell.revealed = true;
 
+    if (this.doubleBarrelActive) {
+      this.doubleBarrelMoves += 1;
+    }
 
     if (cell.isShip && cell.shipId) {
       cell.status = 'revealed-ship';
@@ -409,7 +421,7 @@ export class ShowBattlefieldComponent {
           //this.revealSurroundingWater(ship.id);
         }
       } else if (ship?.name === 'Эхолот') {
-        console.log("here");
+
         this.revealSpecialSurroundings(cell.row, cell.col);
         this.markSunk(ship.id);
       }
@@ -425,7 +437,23 @@ export class ShowBattlefieldComponent {
       this.waterSplashSound.play();
       const coord = `${this.columnLabels[cell.col]}${cell.row + 1}`;
       this.revealedWater.add(coord);
-      this.moveHighlight(1, false);
+      if (this.doubleBarrelActive) {
+        if (this.doubleBarrelMoves >= 2) {
+          this.doubleBarrelActive = false;
+          if (this.doubelBarrelMoveHighlight > 1) {
+            this.moveHighlight(this.doubelBarrelMoveHighlight, false);
+          }
+          else {
+            this.moveHighlight(1, false);
+          }
+        }
+        else {
+          this.doubelBarrelMoveHighlight = 1;
+        }
+      }
+      else {
+        this.moveHighlight(1, false);
+      }
     }
 
     // if (this.isShipSunk(cell.shipId)) {
@@ -445,7 +473,6 @@ export class ShowBattlefieldComponent {
       for (let dy = -1; dy <= 1; dy++) {
         const nr = row + dx;
         const nc = col + dy;
-        console.log("here2")
 
         if (nr >= 0 && nr < 15 && nc >= 0 && nc < 15) {
           const neighborCell = this.grid[nr][nc];
@@ -456,13 +483,14 @@ export class ShowBattlefieldComponent {
               // Water
               neighborCell.status = 'revealed-water';
               neighborCell.revealed = true;
+              const coord = `${this.columnLabels[neighborCell.col]}${neighborCell.row + 1}`;
+              this.revealedWater.add(coord);
             } else {
               // Occupied by some ship – reveal as "unknown ship" (special color)
               neighborCell.status = 'revealed-unknown';
-              neighborCell.revealed = true;
+              neighborCell.revealed = false;
             }
           }
-          console.log(this.grid);
         }
       }
     }
@@ -470,17 +498,14 @@ export class ShowBattlefieldComponent {
 
   moveHighlight(step: number, check: boolean) {
     this.highlightedIndex = (this.highlightedIndex + step) % this.names.length;
-    if (!check) {
-      this.fleetService.save_current(this.gameId, this.highlightedIndex).subscribe(response => {
+    // this.fleetService.save_current(this.gameId, (this.highlightedIndex + step) % this.names.length).subscribe(response => {
 
-      });
-    }
-  } 
+    // });
+  }
 
   updateScore(ship_type: string, ship_name: string, is_sunk: boolean) {
-    console.log(ship_type);
-    console.log(ship_name);
     if (ship_type == 'standard') {
+      if (this.doubleBarrelActive && this.doubleBarrelMoves >= 2) { this.doubleBarrelActive = false; }
       if (is_sunk) {
         this.scoreService.save_result(this.gameId, this.namesId[this.highlightedIndex], "0", "5", "0", "0", "0").subscribe(response => {
 
@@ -494,88 +519,150 @@ export class ShowBattlefieldComponent {
     }
     else if (ship_type == 'additional') {
       if (ship_name == 'Сюрприз') {
-
+        if (this.doubleBarrelActive && this.doubleBarrelMoves >= 2) { this.doubleBarrelActive = false; }
       }
       else if (ship_name == 'Двустволка') {
-        this.double_barrel = true;
+        this.doubleBarrelActive = true;
+        this.doubleBarrelMoves = 0;
       }
       else if (ship_name == 'Реверс') {
         this.reversedNames = [...this.names].reverse();
         this.reversedNamesId = [...this.namesId].reverse();
-        this.highlightedIndex = Math.abs(this.highlightedIndex - this.names.length + 1);
-        if (this.double_barrel) {
-          this.double_barrel = false;
+        this.highlightedIndex = this.names.length - 1 - this.highlightedIndex;
+
+        if (this.doubleBarrelActive) {
+          if (this.doubleBarrelMoves >= 2) {
+            this.doubleBarrelActive = false;
+            if (this.doubelBarrelMoveHighlight > 1) {
+              this.moveHighlight(this.doubelBarrelMoveHighlight, false);
+            }
+            else {
+              this.moveHighlight(1, false);
+            }
+          }
+          else {
+            this.doubelBarrelMoveHighlight = 1;
+          }
+        } else {
+          this.moveHighlight(1, false);
         }
-        else {
-          this.moveHighlight(1, true);
-        }
-        for (let i = 0; i < this.reversedNames.length; i++) {
-          this.fleetService.saveQueue(this.gameId, this.reversedNames[i], i + 1, this.highlightedIndex).subscribe(response => {
-            this.names = this.reversedNames;
-            this.namesId = this.reversedNamesId;
-            this.commandService.set_command("battlefield," + this.gameId + "," + this.highlightedIndex + "," + Math.random(), 3).subscribe((response3: any) => {
-            });
-          });
-        }
+
+        this.fleetService.saveQueue(this.gameId, this.reversedNames, this.highlightedIndex).subscribe(() => {
+          this.names = this.reversedNames;
+          this.namesId = this.reversedNamesId;
+
+          this.commandService.set_command("battlefield," + this.gameId + "," + this.highlightedIndex + "," + Math.random(), 3).subscribe();
+        });
       }
       else if (ship_name == 'Переход +5') {
-        this.moveHighlight(5, false);
+        if (this.doubleBarrelActive) {
+          if (this.doubleBarrelMoves >= 2) {
+            this.doubleBarrelActive = false;
+            if (this.doubelBarrelMoveHighlight > 1) {
+              this.moveHighlight(this.doubelBarrelMoveHighlight + 5, false);
+            }
+            else {
+              this.moveHighlight(5, false);
+            }
+          }
+          else {
+            this.doubelBarrelMoveHighlight = 5;
+          }
+        } else { this.moveHighlight(5, false); }
       }
       else if (ship_name == 'Переход +3') {
-        this.moveHighlight(3, false);
+        if (this.doubleBarrelActive) {
+          if (this.doubleBarrelMoves >= 2) {
+            this.doubleBarrelActive = false;
+            if (this.doubelBarrelMoveHighlight > 1) {
+              this.moveHighlight(this.doubelBarrelMoveHighlight + 3, false);
+            }
+            else {
+              this.moveHighlight(3, false);
+            }
+          }
+          else {
+            this.doubelBarrelMoveHighlight = 3;
+          }
+        } else { this.moveHighlight(3, false); }
       }
       else if (ship_name == 'Караоке') {
-
+        if (this.doubleBarrelActive && this.doubleBarrelMoves >= 2) { this.doubleBarrelActive = false; }
       }
       else if (ship_name == 'Бонус +5') {
         this.scoreService.save_result(this.gameId, this.namesId[this.highlightedIndex], "0", "0", "0", "5", "0").subscribe(response => {
-
+          if (this.doubleBarrelActive && this.doubleBarrelMoves >= 2) { this.doubleBarrelActive = false; }
         });
       }
       else if (ship_name == 'Бонус +3') {
         this.scoreService.save_result(this.gameId, this.namesId[this.highlightedIndex], "0", "0", "0", "3", "0").subscribe(response => {
-
+          if (this.doubleBarrelActive && this.doubleBarrelMoves >= 2) { this.doubleBarrelActive = false; }
         });
       }
       else if (ship_name == 'Бонус +1') {
         this.scoreService.save_result(this.gameId, this.namesId[this.highlightedIndex], "0", "0", "0", "1", "0").subscribe(response => {
-
+          if (this.doubleBarrelActive && this.doubleBarrelMoves >= 2) { this.doubleBarrelActive = false; }
         });
       }
       else if (ship_name == 'Штраф -5') {
         this.scoreService.save_result(this.gameId, this.namesId[this.highlightedIndex], "0", "0", "0", "0", "-5").subscribe(response => {
-          if (this.double_barrel) {
-            this.double_barrel = false;
-          }
-          else {
-            this.moveHighlight(1, false);
-          }
+          if (this.doubleBarrelActive) {
+            if (this.doubleBarrelMoves >= 2) {
+              this.doubleBarrelActive = false;
+              if (this.doubelBarrelMoveHighlight > 1) {
+                this.moveHighlight(this.doubelBarrelMoveHighlight, false);
+              }
+              else {
+                this.moveHighlight(1, false);
+              }
+            }
+            else {
+              this.doubelBarrelMoveHighlight = 1;
+            }
+          } else { this.moveHighlight(1, false); }
         });
       }
       else if (ship_name == 'Штраф -3') {
         this.scoreService.save_result(this.gameId, this.namesId[this.highlightedIndex], "0", "0", "0", "0", "-3").subscribe(response => {
-          if (this.double_barrel) {
-            this.double_barrel = false;
-          }
-          else {
-            this.moveHighlight(1, false);
-          }
+          if (this.doubleBarrelActive) {
+            if (this.doubleBarrelMoves >= 2) {
+              this.doubleBarrelActive = false;
+              if (this.doubelBarrelMoveHighlight > 1) {
+                this.moveHighlight(this.doubelBarrelMoveHighlight, false);
+              }
+              else {
+                this.moveHighlight(1, false);
+              }
+            }
+            else {
+              this.doubelBarrelMoveHighlight = 1;
+            }
+          } else { this.moveHighlight(1, false); }
         });
       }
       else if (ship_name == 'Штраф -1') {
         this.scoreService.save_result(this.gameId, this.namesId[this.highlightedIndex], "0", "0", "0", "0", "-1").subscribe(response => {
-          if (this.double_barrel) {
-            this.double_barrel = false;
-          }
-          else {
-            this.moveHighlight(1, false);
-          }
+          if (this.doubleBarrelActive) {
+            if (this.doubleBarrelMoves >= 2) {
+              this.doubleBarrelActive = false;
+              if (this.doubelBarrelMoveHighlight > 1) {
+                this.moveHighlight(this.doubelBarrelMoveHighlight, false);
+              }
+              else {
+                this.moveHighlight(1, false);
+              }
+            }
+            else {
+              this.doubelBarrelMoveHighlight = 1;
+            }
+          } else { this.moveHighlight(1, false); }
         });
       }
       else if (ship_name == 'Песня') {
-
+        if (this.doubleBarrelActive && this.doubleBarrelMoves >= 2) { this.doubleBarrelActive = false; }
       }
       else if (ship_name == 'Всем чётным командам по 5 баллов') {
+        if (this.doubleBarrelActive && this.doubleBarrelMoves >= 2) { this.doubleBarrelActive = false; }
         this.scoreService.get_current_results(this.gameId).subscribe((response: any) => {
           if (response["message"] == 'No answers') {
 
@@ -585,18 +672,43 @@ export class ShowBattlefieldComponent {
             for (let i = 0; i < this.teams.length; i++) {
               this.teams[i].total = this.teams[i].bonus_points + this.teams[i].penalty_points + this.teams[i].question_points + this.teams[i].ship_hit_points + this.teams[i].ship_kill_points;
             }
-            this.teams = [...this.teams].sort((a, b) => b.total - a.total);
-            console.log(this.teams.length);
-            for (let i = 1; i < this.teams.length; i += 2) {
-              console.log(i);
-              this.scoreService.save_result(this.gameId, this.teams[i].team_id, "0", "0", "0", "5", "0").subscribe(response2 => {
+            this.teams = [...this.teams].sort((a, b) => {
+              if (b.total !== a.total) return b.total - a.total;
+              if (b.ship_kill_points !== a.ship_kill_points) return b.ship_kill_points - a.ship_kill_points;
+              if (b.ship_hit_points !== a.ship_hit_points) return b.ship_hit_points - a.ship_hit_points;
+              if (b.question_points !== a.question_points) return b.question_points - a.question_points;
+              if (b.bonus_points !== a.bonus_points) return b.bonus_points - a.bonus_points;
+              return b.penalty_points - a.penalty_points; // less penalty = better
+            });
 
-              });
+            let place = 1;
+            for (let i = 0; i < this.teams.length; i++) {
+              if (i > 0 && (
+                this.teams[i].total === this.teams[i - 1].total &&
+                this.teams[i].ship_kill_points === this.teams[i - 1].ship_kill_points &&
+                this.teams[i].ship_hit_points === this.teams[i - 1].ship_hit_points &&
+                this.teams[i].question_points === this.teams[i - 1].question_points &&
+                this.teams[i].bonus_points === this.teams[i - 1].bonus_points &&
+                this.teams[i].penalty_points === this.teams[i - 1].penalty_points
+              )) {
+                // same stats → same place
+                this.teams[i].place = this.teams[i - 1].place;
+              } else {
+                this.teams[i].place = place;
+              }
+              place++;
             }
+
+            this.teams.forEach(team => {
+              if (team.place % 2 === 0) {
+                this.scoreService.save_result(this.gameId, team.team_id, "0", "0", "0", "5", "0").subscribe();
+              }
+            });
           }
         });
       }
       else if (ship_name == 'Всем нечётным командам по 5 баллов') {
+        if (this.doubleBarrelActive && this.doubleBarrelMoves >= 2) { this.doubleBarrelActive = false; }
         this.scoreService.get_current_results(this.gameId).subscribe((response: any) => {
           if (response["message"] == 'No answers') {
 
@@ -606,23 +718,49 @@ export class ShowBattlefieldComponent {
             for (let i = 0; i < this.teams.length; i++) {
               this.teams[i].total = this.teams[i].bonus_points + this.teams[i].penalty_points + this.teams[i].question_points + this.teams[i].ship_hit_points + this.teams[i].ship_kill_points;
             }
-            this.teams = [...this.teams].sort((a, b) => b.total - a.total);
-            console.log(this.teams.length);
-            for (let i = 0; i < this.teams.length; i += 2) {
-              console.log(i);
-              this.scoreService.save_result(this.gameId, this.teams[i].team_id, "0", "0", "0", "5", "0").subscribe(response2 => {
+            this.teams = [...this.teams].sort((a, b) => {
+              if (b.total !== a.total) return b.total - a.total;
+              if (b.ship_kill_points !== a.ship_kill_points) return b.ship_kill_points - a.ship_kill_points;
+              if (b.ship_hit_points !== a.ship_hit_points) return b.ship_hit_points - a.ship_hit_points;
+              if (b.question_points !== a.question_points) return b.question_points - a.question_points;
+              if (b.bonus_points !== a.bonus_points) return b.bonus_points - a.bonus_points;
+              return b.penalty_points - a.penalty_points; // less penalty = better
+            });
 
-              });
+            let place = 1;
+            for (let i = 0; i < this.teams.length; i++) {
+              if (i > 0 && (
+                this.teams[i].total === this.teams[i - 1].total &&
+                this.teams[i].ship_kill_points === this.teams[i - 1].ship_kill_points &&
+                this.teams[i].ship_hit_points === this.teams[i - 1].ship_hit_points &&
+                this.teams[i].question_points === this.teams[i - 1].question_points &&
+                this.teams[i].bonus_points === this.teams[i - 1].bonus_points &&
+                this.teams[i].penalty_points === this.teams[i - 1].penalty_points
+              )) {
+                // same stats → same place
+                this.teams[i].place = this.teams[i - 1].place;
+              } else {
+                this.teams[i].place = place;
+              }
+              place++;
             }
+
+            this.teams.forEach(team => {
+              if (team.place % 2 === 1) {
+                this.scoreService.save_result(this.gameId, team.team_id, "0", "0", "0", "5", "0").subscribe();
+              }
+            });
           }
         });
       }
       else if (ship_name == 'Особый тур') {
+        if (this.doubleBarrelActive && this.doubleBarrelMoves >= 2) { this.doubleBarrelActive = false; }
       }
       else if (ship_name == 'Эхолот') {
-
+        if (this.doubleBarrelActive && this.doubleBarrelMoves >= 2) { this.doubleBarrelActive = false; }
       }
       else if (ship_name == 'Рокировка') {
+        if (this.doubleBarrelActive && this.doubleBarrelMoves >= 2) { this.doubleBarrelActive = false; }
         this.scoreService.get_current_results(this.gameId).subscribe((response: any) => {
           if (response["message"] == 'No answers') {
 
@@ -632,16 +770,71 @@ export class ShowBattlefieldComponent {
             for (let i = 0; i < this.teams.length; i++) {
               this.teams[i].total = this.teams[i].bonus_points + this.teams[i].penalty_points + this.teams[i].question_points + this.teams[i].ship_hit_points + this.teams[i].ship_kill_points;
             }
-            this.teams = [...this.teams].sort((a, b) => b.total - a.total);
-            for (let i = 0; i < this.teams.length; i++) {
-              if (this.teams[i].name == this.names[this.highlightedIndex]) {
-                if (i != 0) {
-                  this.scoreService.update_result(this.gameId, this.teams[i].team_id, this.teams[i - 1].ship_hit_points.toString(), this.teams[i - 1].ship_kill_points.toString(), this.teams[i - 1].question_points.toString(), this.teams[i - 1].bonus_points.toString(), this.teams[i - 1].penalty_points.toString()).subscribe(response2 => {
-                    this.scoreService.update_result(this.gameId, this.teams[i - 1].team_id, this.teams[i].ship_hit_points.toString(), this.teams[i].ship_kill_points.toString(), this.teams[i].question_points.toString(), this.teams[i].bonus_points.toString(), this.teams[i].penalty_points.toString()).subscribe(response2 => {
 
-                    });
+            this.teams = [...this.teams].sort((a, b) => {
+              if (b.total !== a.total) return b.total - a.total;
+              if (b.ship_kill_points !== a.ship_kill_points) return b.ship_kill_points - a.ship_kill_points;
+              if (b.ship_hit_points !== a.ship_hit_points) return b.ship_hit_points - a.ship_hit_points;
+              if (b.question_points !== a.question_points) return b.question_points - a.question_points;
+              if (b.bonus_points !== a.bonus_points) return b.bonus_points - a.bonus_points;
+              return b.penalty_points - a.penalty_points; // less penalty = better
+            });
+
+            const selectedTeamName = this.names[this.highlightedIndex];
+            const selectedIndex = this.teams.findIndex(t => t.name === selectedTeamName);
+
+            if (selectedIndex > 0) {
+              const selectedTeam = this.teams[selectedIndex];
+              const higherTeam = this.teams[selectedIndex - 1];
+
+              const tiedTeams = this.teams.filter(t =>
+                t.total === higherTeam.total &&
+                t.ship_kill_points === higherTeam.ship_kill_points &&
+                t.ship_hit_points === higherTeam.ship_hit_points &&
+                t.question_points === higherTeam.question_points &&
+                t.bonus_points === higherTeam.bonus_points &&
+                t.penalty_points === higherTeam.penalty_points
+              );
+
+              if (tiedTeams.length > 0) {
+                const selectedResult = {
+                  ship_hit_points: selectedTeam.ship_hit_points.toString(),
+                  ship_kill_points: selectedTeam.ship_kill_points.toString(),
+                  question_points: selectedTeam.question_points.toString(),
+                  bonus_points: selectedTeam.bonus_points.toString(),
+                  penalty_points: selectedTeam.penalty_points.toString()
+                };
+
+                const higherResult = {
+                  ship_hit_points: higherTeam.ship_hit_points.toString(),
+                  ship_kill_points: higherTeam.ship_kill_points.toString(),
+                  question_points: higherTeam.question_points.toString(),
+                  bonus_points: higherTeam.bonus_points.toString(),
+                  penalty_points: higherTeam.penalty_points.toString()
+                };
+
+                this.scoreService.update_result(
+                  this.gameId,
+                  selectedTeam.team_id,
+                  higherResult.ship_hit_points,
+                  higherResult.ship_kill_points,
+                  higherResult.question_points,
+                  higherResult.bonus_points,
+                  higherResult.penalty_points
+                ).subscribe(() => {
+                  // update all tied higher teams with selected result
+                  tiedTeams.forEach(team => {
+                    this.scoreService.update_result(
+                      this.gameId,
+                      team.team_id,
+                      selectedResult.ship_hit_points,
+                      selectedResult.ship_kill_points,
+                      selectedResult.question_points,
+                      selectedResult.bonus_points,
+                      selectedResult.penalty_points
+                    ).subscribe();
                   });
-                }
+                });
               }
             }
           }
@@ -776,7 +969,12 @@ export class ShowBattlefieldComponent {
 
     for (const cell of ship.parsedCells) {
       const gridCell = this.grid[cell.row][cell.col];
-      gridCell.status = 'hit-sunk';
+      if (ship.name == 'Carrier') {
+        gridCell.status = 'revealed-carrier';
+      }
+      else {
+        gridCell.status = 'hit-sunk';
+      }
     }
   }
 
@@ -814,7 +1012,14 @@ export class ShowBattlefieldComponent {
       type: ship.type,
       direction: ship.direction,
       size: ship.size,
-      cells: ship.parsedCells.map((c: any) => this.cellToCoord(c.row, c.col)),
+      cells: ship.parsedCells.map((c: any) => {
+        const gridCell = this.grid[c.row][c.col];
+        return {
+          coord: this.cellToCoord(c.row, c.col),
+          status: gridCell.status,   // 👈 add cell status here
+          revealed: gridCell.revealed
+        };
+      }),
       revealed_cells: ship.revealed_cells,
       icon: ship.icon || 'fa-bolt'
     }));

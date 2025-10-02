@@ -29,7 +29,7 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
     'localhost',
     '*',
-    '192.168.68.102'
+    '192.168.68.103'
 ]
 
 
@@ -87,7 +87,7 @@ DATABASES = {
         'NAME': 'razumboy3',
         'USER': 'root',
         'PASSWORD': 'tr0ublemaker',
-        'HOST': '192.168.68.102',
+        'HOST': '192.168.68.103',
         'PORT': '3306',
         "OPTIONS": {
             "charset": "utf8mb4",
@@ -136,10 +136,10 @@ CORS_ORIGIN_ALLOW_ALL = True
 
 CORS_ORIGIN_WHITELIST = (
     'http://localhost:4200',
-    'http://192.168.68.102:4200'
+    'http://192.168.68.103:4200'
 )
 
-CSRF_TRUSTED_ORIGINS = ['http://localhost:4200', 'http://192.168.68.102:4200']
+CSRF_TRUSTED_ORIGINS = ['http://localhost:4200', 'http://192.168.68.103:4200']
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
@@ -147,7 +147,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:4200",
-    'http://192.168.68.102:4200'  # Angular frontend URL
+    'http://192.168.68.103:4200'  # Angular frontend URL
 ]
 
 AUTHENTICATION_BACKENDS = ( 'django.contrib.auth.backends.ModelBackend', )

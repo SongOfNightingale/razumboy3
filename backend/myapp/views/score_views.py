@@ -1,3 +1,4 @@
+import json
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
@@ -56,6 +57,42 @@ def save_result(request):
             return JsonResponse({"message": "Data updated"})
     except Exception as e:
         return JsonResponse({"message": e})
+    
+@csrf_exempt
+def save_initial_result(request):
+    if request.method == "OPTIONS":
+        return JsonResponse({"message": "OK"})
+
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            game_id = data.get("game_id")
+
+            users = User.objects.filter(is_superuser = 0, is_staff = 0, is_active = 1)  # assuming Game has ManyToMany with User
+
+            created = []
+            for user in users:
+                # only create if not exists already
+                result, was_created = Results.objects.get_or_create(
+                    game_id=game_id,
+                    user_id=user.pk,
+                    defaults={
+                        "ship_hit_points": 0,
+                        "ship_kill_points": 0,
+                        "question_points": 0,
+                        "bonus_points": 0,
+                        "penalty_points": 0,
+                    }
+                )
+                if was_created:
+                    created.append(user.username)
+
+            return JsonResponse({"message": f"Initial results created for: {created}"})
+
+        except Exception as e:
+            return JsonResponse({"message": str(e)}, status=500)
+
+    return JsonResponse({"message": "Invalid method"}, status=405)
     
 @csrf_exempt
 def update_result(request):

@@ -53,7 +53,9 @@
                 <tr>
                     <th>№</th>
                     <th>Вопрос</th>
-                    <th>Количество ответов</th>
+                    <th>Сыгран ли вопрос</th>
+                    <th>Очки за правильный ответ</th>
+                    <!-- <th>Количество ответов</th> -->
                     <th>Запустить данный вопрос</th>
                     <th>Посмотреть ответы команд</th>
                 </tr>
@@ -62,13 +64,15 @@
                 <tr *ngFor="let question of gameQuestions; index as i">
                     <td>{{ i + 1 }}</td>
                     <td>{{ question.text }}</td>
-                    <td>{{ question.answerNumber }}</td>
+                    <td><i class="fa-solid fa-check" style="color: #63E6BE;" *ngIf="question.is_played"></i></td>
+                    <td><input type="number" id="question_points" [(ngModel)]="question.points"></td>
+                    <!-- <td>{{ question.answerNumber }}</td> -->
                     <td>
                         <button (click)="startQuestion(i+1)"><i class="fa-sharp fa-solid fa-circle-play"
                                 style="color: green;"></i></button>
                     </td>
                     <td>
-                        <button (click)="seeUserAnswers(question.id, i+1)"><i class="fa-solid fa-eye"
+                        <button (click)="seeUserAnswers(question.id, i+1, question.points)"><i class="fa-solid fa-eye"
                                 style="color: blue;"></i></button>
                     </td>
                 </tr>

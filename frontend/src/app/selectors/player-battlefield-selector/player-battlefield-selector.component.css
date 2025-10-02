@@ -104,6 +104,19 @@
     color: white;
 }
 
+.cell.revealed-unknown {
+  background-color: #28a745;
+}
+
+.cell.revealed-carrier {
+  background-color: #000000;
+}
+
+.cell.selected {
+    background-color: rgba(0, 200, 255, 0.4);
+    /* light cyan overlay */
+}
+
 /* Missile object (starts above and flies down) */
 @keyframes missile-fly-side {
     0% {

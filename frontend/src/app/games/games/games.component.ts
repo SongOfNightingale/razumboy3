@@ -6,6 +6,8 @@ import { MatDialog } from '@angular/material/dialog';
 import { AcceptDialogComponent } from '../../utilities/accept-dialog/accept-dialog.component';
 import { DialogComponent } from '../../utilities/dialog/dialog.component';
 import { CommandService } from '../../services/command.service';
+import { UserService } from '../../services/user.service';
+import { ScoreService } from '../../services/score.service';
 
 @Component({
   selector: 'app-games',
@@ -40,7 +42,7 @@ export class GamesComponent {
   language: string = '';
   gamesMessage: string = '';
 
-  constructor(private router: Router, private gameService: GameService, private sharedService: SharedService, private dialog: MatDialog, private commandService: CommandService) {
+  constructor(private router: Router, private gameService: GameService, private sharedService: SharedService, private dialog: MatDialog, private commandService: CommandService, private scoreService: ScoreService) {
     this.gameService.get_all_games().subscribe((response: any) => {
       this.games = response;
       this.games.reverse();
@@ -131,9 +133,11 @@ export class GamesComponent {
       }
       if (!this.isGameActive) {
         this.gameService.start_game(game.id).subscribe((response: any) => {
-          localStorage.setItem("gameId", game.id);
-          localStorage.setItem("gameName", game.name);
-          this.router.navigate(['/game-panel']);
+          this.scoreService.save_initial_result(game.id).subscribe(response => {
+            localStorage.setItem("gameId", game.id);
+            localStorage.setItem("gameName", game.name);
+            this.router.navigate(['/game-panel']);
+          });
         });
       }
     });

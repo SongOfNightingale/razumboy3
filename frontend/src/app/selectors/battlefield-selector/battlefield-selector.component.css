@@ -75,6 +75,14 @@
     background: #a2d2ff;
 }
 
+.cell.revealed-unknown {
+  background-color: #28a745;
+}
+
+.cell.revealed-carrier {
+  background-color: #000000;
+}
+
 .cell.revealed-ship {
     background: #ffc93c;
 }

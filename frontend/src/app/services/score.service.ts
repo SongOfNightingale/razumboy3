@@ -27,6 +27,11 @@ export class ScoreService {
     return this.httpClient.put(create_url, {}, { params: parameters });
   }
 
+  save_initial_result(game_id = "") {
+    const create_url = environment.backend + "save_initial_result";
+    return this.httpClient.post(create_url, { game_id });
+  }
+
   update_result(game_id = "", user_id = "", ship_hit_points = "", ship_kill_points = "", question_points = "", bonus_points = "", penalty_points = "") {
     const create_url = environment.backend + "update_result";
     let parameters = new HttpParams().set('game_id', game_id);

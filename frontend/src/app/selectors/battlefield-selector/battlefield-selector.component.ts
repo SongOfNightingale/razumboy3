@@ -11,7 +11,7 @@ interface Cell {
   isShip: boolean;
   shipId?: string;
   icon?: string;
-  status?: 'hidden' | 'revealed-water' | 'revealed-ship' | 'hit-sunk' | 'revealed-unknown';
+  status?: 'hidden' | 'revealed-water' | 'revealed-ship' | 'hit-sunk' | 'revealed-unknown' | 'revealed-carrier';
   justRevealed: boolean;
   type: string;
 }
@@ -81,7 +81,7 @@ export class BattlefieldSelectorComponent implements OnChanges {
       if (response["message"] == 'No answers') {
         this.userService.get_all_game_users().subscribe((response: any) => {
           const teamList: Team[] = response.map((user: any, index: number) => ({
-            place: index + 1,
+            place: 1,
             name: user.username,
             ship_kill_points: 0,
             ship_hit_points: 0,
@@ -96,14 +96,43 @@ export class BattlefieldSelectorComponent implements OnChanges {
       }
       else {
         this.teams = response;
-        console.log(this.teams);
+
         for (let i = 0; i < this.teams.length; i++) {
           this.teams[i].total = this.teams[i].bonus_points + this.teams[i].penalty_points + this.teams[i].question_points + this.teams[i].ship_hit_points + this.teams[i].ship_kill_points;
         }
-        this.teams = [...this.teams].sort((a, b) => b.total - a.total);
-        for (let i = 0; i < this.teams.length; i++) {
-          this.teams[i].place = i + 1;
+
+        this.teams = [...this.teams].sort((a, b) => {
+          if (b.total !== a.total) return b.total - a.total; // highest total first
+          if (b.ship_kill_points !== a.ship_kill_points) return b.ship_kill_points - a.ship_kill_points;
+          if (b.ship_hit_points !== a.ship_hit_points) return b.ship_hit_points - a.ship_hit_points;
+          if (b.question_points !== a.question_points) return b.question_points - a.question_points;
+          if (b.bonus_points !== a.bonus_points) return b.bonus_points - a.bonus_points;
+          return b.penalty_points - a.penalty_points;
+        });
+
+        let currentPlace = 1;
+        this.teams[0].place = currentPlace;
+
+        for (let i = 1; i < this.teams.length; i++) {
+          const prev = this.teams[i - 1];
+          const curr = this.teams[i];
+
+          if (
+            curr.total === prev.total &&
+            curr.ship_kill_points === prev.ship_kill_points &&
+            curr.ship_hit_points === prev.ship_hit_points &&
+            curr.question_points === prev.question_points &&
+            curr.bonus_points === prev.bonus_points &&
+            curr.penalty_points === prev.penalty_points
+          ) {
+            // identical score → same place
+            curr.place = prev.place;
+          } else {
+            // new place = index + 1
+            curr.place = i + 1;
+          }
         }
+
         this.dataSource.data = this.teams;
       }
     });
@@ -114,6 +143,7 @@ export class BattlefieldSelectorComponent implements OnChanges {
     this.initGrid();
     this.loadFleetData();
     this.originalList = [];
+    this.names = [];
     this.fleetService.getQueue(this.gameId).subscribe((response: any) => {
       if (response["message"] == "No order") {
         // Example: To load from service instead of hardcoded list
@@ -125,10 +155,13 @@ export class BattlefieldSelectorComponent implements OnChanges {
         });
       }
       else {
-        this.highlightedIndex = response[0].current;
+        response.sort((a: any, b: any) => a.order - b.order);
+        //this.highlightedIndex = response[0].current;
+        console.log(this.highlightedIndex);
         for (let i = 0; i < response.length; i++) {
           this.originalList.push(response[i].username);
         }
+        console.log(this.originalList);
         this.names = [...this.originalList];
       }
     });
@@ -158,7 +191,14 @@ export class BattlefieldSelectorComponent implements OnChanges {
       this.ships = data.ships_data.map((ship: any) => {
         return {
           ...ship,
-          parsedCells: ship.cells.map((coord: string) => this.coordToCell(coord)),
+          parsedCells: ship.cells.map((c: any) => {
+            const cell = this.coordToCell(c.coord);
+            return {
+              ...cell,
+              status: c.status,
+              revealed: c.revealed
+            };
+          }),
           revealed_cells: ship.revealed_cells || []
         };
       });
@@ -196,8 +236,8 @@ export class BattlefieldSelectorComponent implements OnChanges {
         const gridCell = this.grid[cell.row][cell.col];
         gridCell.isShip = true;
         gridCell.shipId = ship.id;
-        gridCell.revealed = ship.revealed_cells.includes(this.cellToCoord(cell.row, cell.col));
-        gridCell.status = gridCell.revealed ? 'revealed-ship' : 'hidden';
+        gridCell.revealed = cell.revealed;
+        gridCell.status = cell.status;
         gridCell.type = ship.type;
         if (ship.type === 'additional') {
           gridCell.icon = ship.icon || 'fa-bolt';
