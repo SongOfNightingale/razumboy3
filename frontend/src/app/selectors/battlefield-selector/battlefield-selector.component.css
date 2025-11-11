@@ -1,29 +1,44 @@
 .battle-container {
     display: flex;
-    width: 100%;
-    /* full viewport width */
-    height: auto;
-    /* use auto so it wraps content */
+    width: 100vw;                /* span full viewport width */
+    box-sizing: border-box;
+    padding: 20px 0;             /* vertical spacing, center horizontally via flex */
     border-bottom: 2px solid #ccc;
-    /* this adds the bottom border */
-    margin-left: 250px;
+    justify-content: center;     /* center inner content horizontally */
+    margin-left: 0;              /* remove previous left offset */
 }
 
-.battlefield,
-.list-panel {
-    width: 50%;
+/* keep two panels side-by-side but constrain their max width so they stay centered */
+.battlefield, .list-panel{
+    flex: 0 1 50%;
     box-sizing: border-box;
     padding: 20px;
-    /* optional for spacing */
     overflow: auto;
-    /* in case content overflows */
+}
+
+.battlefield {
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .below-content {
-    padding: 20px;
+    width: 100%;                /* full viewport width */
+    box-sizing: border-box;
+    padding: 20px 0;             /* vertical padding only */
     background: #fafafa;
-    margin-left: 250px;
+    margin-left: 0;              /* remove previous left offset */
+    display: flex;
+    justify-content: center;     /* center inner content horizontally */
 }
+
+/* constrain the table container so it centers nicely */
+.below-content .table-container {
+    width: 100%;
+    padding: 0 20px;
+    margin-left: 0;     
+}
+
 
 .battlefield {
     background-color: #f0f8ff;
@@ -72,7 +87,76 @@
 }
 
 .cell.revealed-water {
-    background: #a2d2ff;
+    position: relative;
+    overflow: hidden; /* Ensure the animation stays within the cell */
+    background: radial-gradient(120% 80% at 30% 20%, #bfefff 0%, #9fdfff 35%, #7fcfff 100%);
+    background-size: 200% 100%;
+    animation: water-motion 6s linear infinite; /* Add animation */
+}
+
+/* Animation for moving water */
+@keyframes water-motion {
+    0% {
+        background-position: 0% 10%;
+    }
+    100% {
+        background-position: 100% 30%;
+    }
+}
+
+.cell.revealed-water::before {
+    content: "";
+    position: absolute;
+    top: -8px;
+    left: -40%;
+    width: 180%;
+    height: 40%;
+    background: linear-gradient(90deg,
+        rgba(255,255,255,0.18) 0%,
+        rgba(255,255,255,0.05) 40%,
+        rgba(255,255,255,0.18) 100%);
+    transform: skewX(-18deg) translateX(-110%);
+    filter: blur(6px);
+    opacity: 0.9;
+    pointer-events: none;
+    animation: water-shimmer 2.8s linear infinite;
+    border-radius: 50%;
+    mix-blend-mode: screen;
+}
+
+/* ripple animation: expand and fade */
+@keyframes water-ripple {
+    0% {
+        transform: translate(-50%, -50%) scale(0.12);
+        opacity: 0.95;
+        box-shadow: 0 0 6px rgba(120,200,255,0.18);
+    }
+    50% {
+        transform: translate(-50%, -50%) scale(0.9);
+        opacity: 0.6;
+        box-shadow: 0 0 10px rgba(80,170,240,0.14);
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(5.5);
+        opacity: 0;
+        box-shadow: 0 0 16px rgba(30,120,200,0.0);
+    }
+}
+
+.cell.revealed-water.ripple::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 8px;
+    height: 8px;
+    background: radial-gradient(circle, rgba(255,255,255,0.65) 0% 10%, rgba(255,255,255,0.12) 30%, rgba(255,255,255,0.02) 60%, transparent 70%);
+    border-radius: 50%;
+    transform: translate(-50%, -50%) scale(0.12);
+    opacity: 0.95;
+    pointer-events: none;
+    box-shadow: 0 0 12px rgba(120,200,255,0.15);
+    animation: water-ripple 900ms ease-out forwards;
 }
 
 .cell.revealed-unknown {
@@ -88,9 +172,70 @@
 }
 
 .cell.hit-sunk {
-    background: #f94144;
-    font-weight: bold;
-    color: white;
+    position: relative;
+    background: linear-gradient(180deg, #5c0b0b 0%, #8b1a1a 60%);
+    color: #fff;
+    overflow: visible;
+    border: 1px solid rgba(0,0,0,0.45);
+}
+
+/* ship silhouette centered and slightly offset downward to look submerged */
+.cell.hit-sunk .ship-silhouette {
+    font-size: 20px;
+    color: rgba(20,20,20,0.95);
+    position: relative;
+    transform: translateY(4px);
+    text-shadow: 0 1px 0 rgba(255,255,255,0.06);
+}
+
+/* small skull mark to emphasize "sunk" (corner badge) */
+.cell.hit-sunk .sunk-mark {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    font-size: 12px;
+    color: #fff;
+    background: rgba(0,0,0,0.45);
+    padding: 2px;
+    border-radius: 50%;
+    transform: rotate(-10deg);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+}
+
+/* subtle smoke blob rising from the sunk cell */
+.cell.hit-sunk::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: 100%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 18px;
+    background: radial-gradient(circle at 40% 30%, rgba(255,255,255,0.9) 0%, rgba(255,200,120,0.85) 8%, rgba(200,80,30,0.6) 40%, transparent 70%);
+    filter: blur(6px);
+    opacity: 0.85;
+    animation: smoke-rise 1600ms ease-in-out infinite;
+    pointer-events: none;
+}
+
+/* small waterline highlight at bottom to suggest partial submersion */
+.cell.hit-sunk::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 2px;
+    height: 6px;
+    background: linear-gradient(90deg, rgba(255,255,255,0.06), rgba(255,255,255,0.12) 50%, rgba(255,255,255,0.06));
+    filter: blur(1px);
+    opacity: 0.95;
+    pointer-events: none;
+}
+
+@keyframes smoke-rise {
+    0%   { transform: translateX(-50%) translateY(0) scale(0.9); opacity: 0.9; }
+    50%  { transform: translateX(-50%) translateY(-6px) scale(1.05); opacity: 0.8; }
+    100% { transform: translateX(-50%) translateY(-12px) scale(0.9); opacity: 0; }
 }
 
 /* Missile object (starts above and flies down) */
@@ -123,10 +268,19 @@
     }
 }
 
+@keyframes fade-in {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
 .cell .missile {
     position: absolute;
-    width: 24px;
-    height: 8px;
+    width: 36px; /* Increased size */
+    height: 12px; /* Increased size */
     background: gray;
     border-radius: 3px;
     transform: rotate(45deg);
@@ -138,8 +292,8 @@
 
 .cell .explosion {
     position: absolute;
-    width: 30px;
-    height: 30px;
+    width: 50px; /* Increased size */
+    height: 50px; /* Increased size */
     background: radial-gradient(circle, orange 40%, red 60%, transparent 70%);
     border-radius: 50%;
     animation: explosion 0.5s ease-out forwards;
@@ -153,12 +307,6 @@
     gap: 50px;
     justify-content: center;
     flex-wrap: wrap;
-}
-
-.list-panel {
-    flex: 1;
-    min-width: 300px;
-    max-width: 400px;
 }
 
 .controls {
@@ -177,6 +325,11 @@
     cursor: grab;
     transition: transform 0.2s ease, background-color 0.2s ease;
     user-select: none;
+    /* transform-origin: center;
+    will-change: transform; */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 3px solid transparent;
+    margin: 8px 0;
 }
 
 .name-card:hover {
@@ -196,8 +349,14 @@
 }
 
 .name-card.highlighted {
-    border: 3px solid #ff9800;
-    background: #fff3e0;
+    background: linear-gradient(45deg, #fff3e0, #ffe0b2);
+    border-color: #ff9800;
+    position: relative;
+    z-index: 1;
+}
+
+.name-card:not(.highlighted) {
+    opacity: 0.8;
 }
 
 .section-title {
@@ -344,33 +503,126 @@ th i.fa-sort-down {
     padding-left: 5px;
     padding-right: 5px;
 }
+/* ...existing code... */
 
-.sidebar-toggle-btn {
+/* Popup overlay styles */
+.popup-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.65); /* dim background */
+  z-index: 2000;
+  pointer-events: auto;
+}
+
+.popup-box {
+  background: #000; /* black background as requested */
+  color: #fff;
+  padding: 18px 28px;
+  border-radius: 8px;
+  min-width: 320px;
+  max-width: 90%;
+  text-align: center;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+  font-size: 18px;
+  line-height: 1.4;
+}
+
+.popup-line {
+  margin: 6px 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+@keyframes fire {
+    0% {
+        background-color: #ff4500; /* orange-red */
+        opacity: 1;
+    }
+    50% {
+        background-color: #ff6347; /* tomato */
+        opacity: 0.8;
+    }
+    100% {
+        background-color: #ff4500; /* orange-red */
+        opacity: 1;
+    }
+}
+
+.cell.on-fire {
+    position: relative;
+    overflow: visible; /* allow flames to escape the cell */
+    z-index: 3;
+    background-color: orange;
+}
+
+/* main flame blob */
+.cell.on-fire::before {
+    content: "";
     position: absolute;
-    top: 1rem;
-    left: 200px;
-    background-color: #2c3e50;
-    border: none;
-    color: #fff;
-    padding: 0.5rem;
-    border-top-right-radius: 0.5rem;
-    border-bottom-right-radius: 0.5rem;
-    cursor: pointer;
-    z-index: 1001;
-    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
+    left: 50%;
+    bottom: calc(100% - 6px);
+    transform: translateX(-50%);
+    width: 46px;
+    height: 46px;
+    border-radius: 50% 50% 40% 40% / 60% 60% 40% 40%;
+    background:
+      radial-gradient(circle at 50% 20%, rgba(255,255,255,0.95) 0% 6%,
+                                 rgba(255,220,80,0.95) 8% 20%,
+                                 rgba(255,140,30,0.9) 25% 45%,
+                                 rgba(220,40,30,0.75) 50% 65%,
+                                 transparent 70%);
+    filter: blur(6px);
+    pointer-events: none;
+    animation: flame-flicker 900ms ease-in-out infinite;
+    transform-origin: 50% 100%;
+    mix-blend-mode: screen;
+    opacity: 0.95;
 }
 
-.sidebar-toggle-btn:hover {
-    background-color: #34495e;
+/* smaller outer flicker / embers */
+.cell.on-fire::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% - 10px);
+    transform: translateX(-50%);
+    width: 24px;
+    height: 28px;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 50% 18%, rgba(255,240,180,0.9) 0% 8%,
+                                 rgba(255,110,40,0.85) 20% 40%,
+                                 rgba(200,30,20,0.6) 50%,
+                                 transparent 65%);
+    filter: blur(4px);
+    pointer-events: none;
+    animation: ember-rise 700ms ease-in-out infinite;
+    mix-blend-mode: screen;
+    opacity: 0.9;
 }
 
-.sidebar-toggle-btn.sidebar-collapsed {
-    left: 15px;
+/* tiny drifting sparks using box-shadow on a pseudo-element overlay (re-uses ::after via inset shadows trick) */
+.cell.on-fire .spark-helper { display: none; } /* fallback if needed */
+
+/* flame animations */
+@keyframes flame-flicker {
+    0%   { transform: translateX(-50%) translateY(0) scale(0.9) rotate(-2deg); opacity: 0.9; }
+    25%  { transform: translateX(-50%) translateY(-6px) scale(1.05) rotate(2deg); opacity: 1; }
+    50%  { transform: translateX(-50%) translateY(-10px) scale(1) rotate(-1deg); opacity: 0.95; }
+    75%  { transform: translateX(-50%) translateY(-6px) scale(1.08) rotate(1deg); opacity: 1; }
+    100% { transform: translateX(-50%) translateY(0) scale(0.92) rotate(-2deg); opacity: 0.9; }
 }
 
-.below-content {
-    padding: 20px;
-    background: #fafafa;
-    margin-left: 250px;
+@keyframes ember-rise {
+    0%   { transform: translateX(-50%) translateY(0) scale(1); opacity: 0.95; filter: blur(4px); }
+    50%  { transform: translateX(-45%) translateY(-12px) scale(0.95); opacity: 0.85; filter: blur(6px); }
+    100% { transform: translateX(-55%) translateY(-26px) scale(0.85); opacity: 0; filter: blur(8px); }
+}
+
+/* optional: add a subtle glow on the cell while on fire */
+.cell.on-fire {
+    box-shadow: 0 0 10px rgba(255,140,30,0.18), inset 0 0 8px rgba(255,200,80,0.08);
 }

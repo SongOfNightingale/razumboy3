@@ -59,6 +59,7 @@ export class GameTableComponent {
         });
       }
       else {
+        console.log(response);
         this.teams = response;
         for (let i = 0; i < this.teams.length; i++) {
           this.teams[i].total = this.teams[i].bonus_points + this.teams[i].penalty_points + this.teams[i].question_points + this.teams[i].ship_hit_points + this.teams[i].ship_kill_points;

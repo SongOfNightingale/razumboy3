@@ -87,7 +87,6 @@ class Current(models.Model):
 
 class Settings(models.Model):
     language = models.CharField(max_length=255, null=True)
-    special = models.IntegerField(null=True)
     o_number = models.IntegerField(null=True)
 
 class Battlefield(models.Model):
@@ -100,3 +99,12 @@ class Queue(models.Model):
     team = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     order = models.CharField(max_length=255, null=True)
     current = models.CharField(max_length=255, null=True)
+
+class Prediction(models.Model):
+    cell = models.CharField(max_length=255, null=True)
+    game = models.ForeignKey(Game, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+
+class Language(models.Model):
+    ru = models.CharField(max_length=255, null=True)
+    uz = models.CharField(max_length=255, null=True)

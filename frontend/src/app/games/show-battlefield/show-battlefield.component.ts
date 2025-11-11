@@ -56,6 +56,7 @@ export class ShowBattlefieldComponent {
   highlightedIndex = 0;
   namesId: string[] = [];
   reversedNamesId: string[] = [];
+  selectedIndex = 0;
 
   activeUsers: any = [];
   activeUsersNumber: number = 0;
@@ -79,19 +80,39 @@ export class ShowBattlefieldComponent {
 
   doubleBarrelActive: boolean = false;   // tracks if Двустволка was triggered
   doubleBarrelMoves: number = 0;
-  doubelBarrelMoveHighlight: number = 0;
+  doubleBarrelMoveHighlight: number = 0;
 
   screenCommand: string = '';
   clickedRow: any;
   clickedCol: any;
 
+  predictions: any;
+
   lastAction: string = '';
+  number_of_killed_ships: number = 0;
+  playedQuestions: string = '';
+  questionTypes: string = '';
+
+  cellMessage: string = '';
+  actionMessage: string = '';
+  changesMessage: string = '';
+
+  anotherLanguage: boolean = false;
+
+  // Question type mapping
+  questionTypeOptions = [
+    { label: 'Стандарт', value: 1 },
+    { label: 'После убийства корабля', value: 3 },
+    { label: 'Песня', value: 5 },
+    { label: 'Особый тур', value: -1 }
+  ];
 
   onSidebarToggle() {
     this.isSidebarCollapsed = !this.isSidebarCollapsed;
   }
 
   constructor(private fleetService: BattlefieldService, private userAnswerService: UserAnswerService, private userService: UserService, private questionService: QuestionsService, private commandService: CommandService, private scoreService: ScoreService, private settingsService: SettingsService) {
+
     setInterval(() => {
       this.commandService.get_command().subscribe((response: any) => {
         if (response[3]) {
@@ -99,14 +120,27 @@ export class ShowBattlefieldComponent {
           var splitted = this.screenCommand.split(",");
           this.clickedRow = splitted[0];
           this.clickedCol = splitted[1];
-          if (this.wasCellClicked(this.clickedRow, this.clickedCol)) {
+          if (this.wasCellClicked(parseInt(this.clickedRow), parseInt(this.clickedCol))) {
           }
           else {
-            this.cellClicked(this.getCell(parseInt(this.clickedRow), parseInt(this.clickedCol)));
+            var cellClicked = this.getCell(parseInt(this.clickedRow), parseInt(this.clickedCol));
+            if (cellClicked) {
+              this.cellClicked(cellClicked);
+            }
           }
         }
       });
     }, 1000);
+  }
+
+  onUserChange(event: Event): void {
+    const target = event.target as HTMLSelectElement;
+    const index = parseInt(target.value);
+    if (!isNaN(index)) {
+      this.highlightedIndex = index;
+      localStorage.setItem('index', this.highlightedIndex.toString());
+      this.showBattlefield();
+    }
   }
 
   wasCellClicked(row: number, col: number): boolean {
@@ -117,27 +151,67 @@ export class ShowBattlefieldComponent {
     return cell.revealed; // true if already clicked
   }
 
-  getCell(row: number, col: number) {
+  getCell(row: number, col: number): Cell | null {
     if (row < 0 || row >= this.grid.length) {
+      return null;
     }
     if (col < 0 || col >= this.grid[row].length) {
+      return null;
     }
     return this.grid[row][col];
   }
 
   ngOnInit(): void {
     this.gameId = localStorage.getItem("gameId");
+    const storedIndex = localStorage.getItem('index');
+    const storedNumber = localStorage.getItem('killed_ships');
+    const storedPlayedQuestions = localStorage.getItem('played_questions');
+    const storedQuestionTypes = localStorage.getItem('question_types');
+    if (storedIndex !== null) {
+      if (storedIndex == '') { this.highlightedIndex = 0; }
+      else {
+        this.highlightedIndex = parseInt(storedIndex);
+      }
+    }
+    if (storedNumber !== null) {
+      if (storedNumber == '') { this.number_of_killed_ships = 0; }
+      else {
+        this.number_of_killed_ships = parseInt(storedNumber);
+      }
+    }
+    if (storedPlayedQuestions !== null) {
+      if (storedPlayedQuestions == '') { this.playedQuestions = ''; }
+      else {
+        this.playedQuestions = storedPlayedQuestions;
+      }
+    }
+    if (storedQuestionTypes !== null) {
+      if (storedQuestionTypes == '') { this.questionTypes = ''; }
+      else {
+        this.questionTypes = storedQuestionTypes;
+      }
+    }
     this.initGrid();
     this.loadFleetData();
     this.originalList = [];
     this.originalListId = [];
-    this.settingsService.get_numbers().subscribe(response3 => {
+    this.settingsService.get_special_cells(this.gameId).subscribe(response4 => {
+      this.predictions = response4;
+    });
+    this.settingsService.get_numbers().subscribe((response3: any) => {
+      if (response3[0].language == 'uz') {
+        this.anotherLanguage = true;
+      }
+      else {
+        this.anotherLanguage = false;
+      }
       this.fleetService.getQueue(this.gameId).subscribe((response: any) => {
         if (response["message"] == "No order") {
           // Example: To load from service instead of hardcoded list
           this.userService.get_all_game_users().subscribe((data: any) => {
             this.activeUsers = data;
             this.activeUsersNumber = data.length;
+            console.log(this.activeUsersNumber);
             for (let i = 0; i < data.length; i++) {
               this.originalList.push(data[i].username);
               this.originalListId.push(data[i].id);
@@ -150,6 +224,8 @@ export class ShowBattlefieldComponent {
           console.log(response);
           response.sort((a: any, b: any) => a.order - b.order);
           //this.highlightedIndex = response[0].current;
+          this.activeUsers = response;
+          this.activeUsersNumber = response.length;
           for (let i = 0; i < response.length; i++) {
             this.originalList.push(response[i].username);
             this.originalListId.push(response[i].id);
@@ -160,13 +236,32 @@ export class ShowBattlefieldComponent {
         }
         this.questionService.get_all_game_questions().subscribe((response2: any) => {
           this.gameQuestions = response2;
+          var playedQuestionsArray = this.playedQuestions.split(',').map((q: string) => q.trim()).filter((q: string) => q !== '');
+          if (this.questionTypes == '') {
+            for (let i = 0; i < this.gameQuestions.length; i++) {
+              this.questionTypes = this.questionTypes + '1,';
+            }
+          }
+          var questionTypesArray = this.questionTypes.split(',').map((q: string) => q.trim()).filter((q: string) => q !== '');
           for (let i = 0; i < this.gameQuestions.length; i++) {
-            this.gameQuestions[i].is_played = false;
+            if (playedQuestionsArray.includes(i.toString())) { this.gameQuestions[i].is_played = true; }
+            else {
+              this.gameQuestions[i].is_played = false;
+            }
             this.gameQuestions[i].points = 1;
+            this.gameQuestions[i].question_type = parseInt(questionTypesArray[i]);
           }
         });
       });
     });
+  }
+
+  onQuestionTypeChange(index: number, event: any) {
+    const selectedValue = event.target.value;
+    var questionTypesArray = this.questionTypes.split(',').map((q: string) => q.trim()).filter((q: string) => q !== '');
+    questionTypesArray[index] = selectedValue;
+    this.questionTypes = questionTypesArray.join(',') + ',';
+    localStorage.setItem('question_types', this.questionTypes);
   }
 
   seeUserAnswers(id: any, index: any, points: any) {
@@ -184,6 +279,7 @@ export class ShowBattlefieldComponent {
   startQuestion(question_number2: number) {
     this.timeInSeconds = this.gameQuestions[question_number2 - 1].time_to_answer;
     this.timeSend = this.timeInSeconds;
+    this.timeLeft = this.timeInSeconds;
     clearInterval(this.timerInterval);
     clearInterval(this.timerInterval2);
     this.startInterval();
@@ -191,19 +287,22 @@ export class ShowBattlefieldComponent {
   }
 
   startInterval() {
-    if (this.timeLeft <= 0) {
-      this.timeLeft = this.timeInSeconds;
-    }
+    // if (this.timeLeft <= 0) {
+    //   this.timeLeft = this.timeInSeconds;
+    // }
     this.timerInterval2 = setInterval(() => {
       var currentTime = new Date();
       var timeInMilliseconds = currentTime.getTime();
       this.timeLeft = this.timeLeft - 1;
       //NEW
+      console.log(this.timeLeft);
       if (this.timeLeft <= 0) {
         //END NEW
         clearInterval(this.timerInterval);
         clearInterval(this.timerInterval2);
+        console.log(this.activeUsersNumber);
         if (this.answeredUsers[this.questionNumber] < this.activeUsersNumber) {
+          console.log(this.answeredUsers[this.questionNumber]);
           for (let i = 0; i < this.activeUsers.length; i++) {
             var answered = false;
             for (let j = 0; j < this.userAnswers.length; j++) {
@@ -211,31 +310,34 @@ export class ShowBattlefieldComponent {
                 answered = true;
               }
             }
+            console.log(answered);
             if (!answered) {
               var question = this.gameQuestions[this.questionNumber - 1];
               var numberQuestion = this.questionNumber;
+              console.log(question);
               this.userAnswerService.get_provisional_answer(this.gameId, question.id, this.activeUsers[i].id).subscribe((response2: any) => {
                 //NEW            
                 if (response2["message"]) {
                   //END NEW
                   this.userAnswerService.set_user_answer("", this.gameId, question.id, this.activeUsers[i].id, this.timeInSeconds.toString()).subscribe(response => {
-
+                    console.log("No answer from user");
                   });
                 }
                 else {
                   this.userAnswerService.set_user_answer(response2[0].toString(), this.gameId, question.id, this.activeUsers[i].id, this.timeInSeconds.toString()).subscribe(response => {
-
+                    console.log("No answer from user");
                   });
                 }
               });
             }
           }
         }
-        this.commandService.set_command("battlefield," + this.gameId + "," + this.highlightedIndex + "," + Math.random(), 3).subscribe((response3: any) => {
-          this.commandService.set_command("logo", 4).subscribe((response3: any) => {
+        console.log('Time is up!');
+        //this.commandService.set_command("battlefield," + this.gameId + "," + this.highlightedIndex + "," + Math.random(), 3).subscribe((response3: any) => {
+        this.commandService.set_command("logo", 7).subscribe((response3: any) => {
 
-          });
         });
+        //});
       }
     }, 1000);
   }
@@ -243,6 +345,8 @@ export class ShowBattlefieldComponent {
   startCurrentQuestion(questionNumber: any) {
     var isMedia = "";
     this.gameQuestions[questionNumber - 1].is_played = true;
+    this.playedQuestions = this.playedQuestions + (questionNumber - 1) + ",";
+    localStorage.setItem('played_questions', this.playedQuestions);
     var question = this.gameQuestions[questionNumber - 1];
     if (question.image_link || question.audio_link || question.video_link) { isMedia = "media_question"; }
     else { isMedia = "question"; }
@@ -384,7 +488,12 @@ export class ShowBattlefieldComponent {
   cellClicked(cell: Cell) {
     if (cell.revealed) return;
 
+    this.cellMessage = "";
+    this.actionMessage = "";
+    this.changesMessage = "";
+
     cell.revealed = true;
+    this.cellMessage = 'Открыта ячейка: ' + this.cellToCoord(cell.row, cell.col);
 
     if (this.doubleBarrelActive) {
       this.doubleBarrelMoves += 1;
@@ -411,6 +520,8 @@ export class ShowBattlefieldComponent {
         cell.justRevealed = false;
       }, 800);
 
+      this.checkPrediction(cell);
+
       if (ship?.name === 'Carrier') {
         const shipIsSunk = this.isShipSunk(ship.id);
 
@@ -434,24 +545,38 @@ export class ShowBattlefieldComponent {
       this.updateScore(ship.type, ship.name, this.isShipSunk(ship.id));
     } else {
       cell.status = 'revealed-water';
+      this.actionMessage = "Промах!";
       this.waterSplashSound.play();
       const coord = `${this.columnLabels[cell.col]}${cell.row + 1}`;
       this.revealedWater.add(coord);
       if (this.doubleBarrelActive) {
         if (this.doubleBarrelMoves >= 2) {
           this.doubleBarrelActive = false;
-          if (this.doubelBarrelMoveHighlight > 1) {
-            this.moveHighlight(this.doubelBarrelMoveHighlight, false);
+          if (this.doubleBarrelMoveHighlight > 1) {
+            this.changesMessage = "Переход хода на: " + this.doubleBarrelMoveHighlight;
+            if (this.anotherLanguage) {
+              this.changesMessage = "Navbat: " + this.doubleBarrelMoveHighlight;
+            }
+            this.moveHighlight(this.doubleBarrelMoveHighlight, false);
           }
           else {
+            this.changesMessage = "Переход хода на: 1";
+            if (this.anotherLanguage) {
+              this.changesMessage = "Navbat: 1";
+            }
             this.moveHighlight(1, false);
           }
         }
         else {
-          this.doubelBarrelMoveHighlight = 1;
+          this.doubleBarrelMoveHighlight = 1;
+          this.changesMessage = "Осталось выстрелов с Двустволки: 1";
         }
       }
       else {
+        this.changesMessage = "Переход хода на: 1";
+        if (this.anotherLanguage) {
+          this.changesMessage = "Navbat: 1";
+        }
         this.moveHighlight(1, false);
       }
     }
@@ -466,6 +591,19 @@ export class ShowBattlefieldComponent {
     //   this.revealedWater.add(coord);
     // }
     this.saveUpdatedFleet();
+  }
+
+  checkPrediction(cell: Cell) {
+    const cell_string = this.cellToCoord(cell.row, cell.col);
+    console.log(cell_string);
+    console.log(this.predictions);
+    for (let i = 0; i < this.predictions.length; i++) {
+      if (this.predictions[i].cell === cell_string) {
+        this.cellMessage += "; Команда " + this.predictions[i].user_name + " угадала ячейку и получает 10 очков!";
+        this.scoreService.save_result(this.gameId, this.predictions[i].user_id, "0", "0", "0", "10", "0").subscribe(response => {
+        });
+      }
+    }
   }
 
   revealSpecialSurroundings(row: number, col: number): void {
@@ -497,7 +635,14 @@ export class ShowBattlefieldComponent {
   }
 
   moveHighlight(step: number, check: boolean) {
-    this.highlightedIndex = (this.highlightedIndex + step) % this.names.length;
+    if (this.names?.length > 0) {
+      this.highlightedIndex = (this.highlightedIndex + step) % this.names.length;
+      localStorage.setItem('index', this.highlightedIndex.toString());
+    }
+    else {
+      this.highlightedIndex = 0;
+      localStorage.setItem('index', this.highlightedIndex.toString());
+    }
     // this.fleetService.save_current(this.gameId, (this.highlightedIndex + step) % this.names.length).subscribe(response => {
 
     // });
@@ -508,40 +653,53 @@ export class ShowBattlefieldComponent {
       if (this.doubleBarrelActive && this.doubleBarrelMoves >= 2) { this.doubleBarrelActive = false; }
       if (is_sunk) {
         this.scoreService.save_result(this.gameId, this.namesId[this.highlightedIndex], "0", "5", "0", "0", "0").subscribe(response => {
-
+          this.actionMessage = "Корабль потоплен!";
+          this.changesMessage = "Команда " + this.names[this.highlightedIndex] + " получает 5 очков за потопление!";
         });
       }
       else {
         this.scoreService.save_result(this.gameId, this.namesId[this.highlightedIndex], "1", "0", "0", "0", "0").subscribe(response => {
-
+          this.actionMessage = "Попадание в корабль!";
+          this.changesMessage = "Команда " + this.names[this.highlightedIndex] + " получает 1 очко за попадание!";
         });
       }
     }
     else if (ship_type == 'additional') {
       if (ship_name == 'Сюрприз') {
+        this.actionMessage = "Сюрприз!";
+        if (this.anotherLanguage) {
+          this.actionMessage = "Syurpriz";
+        }
         if (this.doubleBarrelActive && this.doubleBarrelMoves >= 2) { this.doubleBarrelActive = false; }
       }
       else if (ship_name == 'Двустволка') {
         this.doubleBarrelActive = true;
         this.doubleBarrelMoves = 0;
+        this.actionMessage = "Активирована двустволка!";
+        if (this.anotherLanguage) {
+          this.actionMessage = "Ikkitalik zarba!";
+        }
+        this.changesMessage = "Команда " + this.names[this.highlightedIndex] + " может сделать ещё два выстрела!";
       }
       else if (ship_name == 'Реверс') {
         this.reversedNames = [...this.names].reverse();
         this.reversedNamesId = [...this.namesId].reverse();
         this.highlightedIndex = this.names.length - 1 - this.highlightedIndex;
+        localStorage.setItem('index', this.highlightedIndex.toString());
 
         if (this.doubleBarrelActive) {
           if (this.doubleBarrelMoves >= 2) {
             this.doubleBarrelActive = false;
-            if (this.doubelBarrelMoveHighlight > 1) {
-              this.moveHighlight(this.doubelBarrelMoveHighlight, false);
+            if (this.doubleBarrelMoveHighlight > 1) {
+              this.moveHighlight(this.doubleBarrelMoveHighlight, false);
             }
             else {
               this.moveHighlight(1, false);
             }
           }
           else {
-            this.doubelBarrelMoveHighlight = 1;
+            this.changesMessage = "Осталось выстрелов с Двустволки: 1";
+            this.doubleBarrelMoveHighlight = 1;
           }
         } else {
           this.moveHighlight(1, false);
@@ -550,7 +708,10 @@ export class ShowBattlefieldComponent {
         this.fleetService.saveQueue(this.gameId, this.reversedNames, this.highlightedIndex).subscribe(() => {
           this.names = this.reversedNames;
           this.namesId = this.reversedNamesId;
-
+          this.actionMessage = "Порядок команд реверсирован!";
+          if (this.anotherLanguage) {
+            this.actionMessage = "Revers!";
+          }
           this.commandService.set_command("battlefield," + this.gameId + "," + this.highlightedIndex + "," + Math.random(), 3).subscribe();
         });
       }
@@ -558,110 +719,184 @@ export class ShowBattlefieldComponent {
         if (this.doubleBarrelActive) {
           if (this.doubleBarrelMoves >= 2) {
             this.doubleBarrelActive = false;
-            if (this.doubelBarrelMoveHighlight > 1) {
-              this.moveHighlight(this.doubelBarrelMoveHighlight + 5, false);
+            if (this.doubleBarrelMoveHighlight > 1) {
+              this.moveHighlight(this.doubleBarrelMoveHighlight + 5, false);
             }
             else {
               this.moveHighlight(5, false);
             }
           }
           else {
-            this.doubelBarrelMoveHighlight = 5;
+            this.changesMessage = "Осталось выстрелов с Двустволки: 1";
+            this.doubleBarrelMoveHighlight = 5;
           }
-        } else { this.moveHighlight(5, false); }
+        } else {
+          this.actionMessage = "Переход хода на: 5";
+          if (this.anotherLanguage) {
+            this.actionMessage = "Navbat: 5!";
+          }
+          this.moveHighlight(5, false);
+        }
       }
       else if (ship_name == 'Переход +3') {
         if (this.doubleBarrelActive) {
           if (this.doubleBarrelMoves >= 2) {
             this.doubleBarrelActive = false;
-            if (this.doubelBarrelMoveHighlight > 1) {
-              this.moveHighlight(this.doubelBarrelMoveHighlight + 3, false);
+            if (this.doubleBarrelMoveHighlight > 1) {
+              this.moveHighlight(this.doubleBarrelMoveHighlight + 3, false);
             }
             else {
               this.moveHighlight(3, false);
             }
           }
           else {
-            this.doubelBarrelMoveHighlight = 3;
+            this.changesMessage = "Осталось выстрелов с Двустволки: 1";
+            this.doubleBarrelMoveHighlight = 3;
           }
-        } else { this.moveHighlight(3, false); }
+        } else {
+          this.actionMessage = "Переход хода на: 3";
+          if (this.anotherLanguage) {
+            this.actionMessage = "Navbat: 3!";
+          }
+          this.moveHighlight(3, false);
+        }
       }
       else if (ship_name == 'Караоке') {
+        this.actionMessage = "Караоке!";
+        if (this.anotherLanguage) {
+          this.actionMessage = "Karaoke!";
+        }
         if (this.doubleBarrelActive && this.doubleBarrelMoves >= 2) { this.doubleBarrelActive = false; }
       }
       else if (ship_name == 'Бонус +5') {
+        this.actionMessage = "Бонус 5 очков!";
+        if (this.anotherLanguage) {
+          this.actionMessage = "Bonus: 5!";
+        }
+        this.changesMessage = "Команда " + this.names[this.highlightedIndex] + " получает 5 бонусных очков!";
         this.scoreService.save_result(this.gameId, this.namesId[this.highlightedIndex], "0", "0", "0", "5", "0").subscribe(response => {
           if (this.doubleBarrelActive && this.doubleBarrelMoves >= 2) { this.doubleBarrelActive = false; }
         });
       }
       else if (ship_name == 'Бонус +3') {
+        this.actionMessage = "Бонус 3 очка!";
+        if (this.anotherLanguage) {
+          this.actionMessage = "Bonus: 3!";
+        }
+        this.changesMessage = "Команда " + this.names[this.highlightedIndex] + " получает 3 бонусных очка!";
         this.scoreService.save_result(this.gameId, this.namesId[this.highlightedIndex], "0", "0", "0", "3", "0").subscribe(response => {
           if (this.doubleBarrelActive && this.doubleBarrelMoves >= 2) { this.doubleBarrelActive = false; }
         });
       }
       else if (ship_name == 'Бонус +1') {
+        this.actionMessage = "Бонус 1 балл!";
+        if (this.anotherLanguage) {
+          this.actionMessage = "Bonus: 1!";
+        }
+        this.changesMessage = "Команда " + this.names[this.highlightedIndex] + " получает 1 бонусный балл!";
         this.scoreService.save_result(this.gameId, this.namesId[this.highlightedIndex], "0", "0", "0", "1", "0").subscribe(response => {
           if (this.doubleBarrelActive && this.doubleBarrelMoves >= 2) { this.doubleBarrelActive = false; }
         });
       }
       else if (ship_name == 'Штраф -5') {
+        this.actionMessage = "Штраф 5 баллов!";
+        if (this.anotherLanguage) {
+          this.actionMessage = "Jarima: 5!";
+        }
+        this.changesMessage = "Команда " + this.names[this.highlightedIndex] + " получает штраф в 5 баллов!";
         this.scoreService.save_result(this.gameId, this.namesId[this.highlightedIndex], "0", "0", "0", "0", "-5").subscribe(response => {
           if (this.doubleBarrelActive) {
             if (this.doubleBarrelMoves >= 2) {
               this.doubleBarrelActive = false;
-              if (this.doubelBarrelMoveHighlight > 1) {
-                this.moveHighlight(this.doubelBarrelMoveHighlight, false);
+              if (this.doubleBarrelMoveHighlight > 1) {
+                this.moveHighlight(this.doubleBarrelMoveHighlight, false);
+                this.commandService.set_command("player_battlefield," + this.gameId + "," + this.highlightedIndex + "," + Math.random(), 1).subscribe();
               }
               else {
                 this.moveHighlight(1, false);
+                this.commandService.set_command("player_battlefield," + this.gameId + "," + this.highlightedIndex + "," + Math.random(), 1).subscribe();
               }
             }
             else {
-              this.doubelBarrelMoveHighlight = 1;
+              this.doubleBarrelMoveHighlight = 1;
             }
-          } else { this.moveHighlight(1, false); }
+          }
+          else {
+            this.moveHighlight(1, false);
+            this.commandService.set_command("player_battlefield," + this.gameId + "," + this.highlightedIndex + "," + Math.random(), 1).subscribe();
+          }
         });
       }
       else if (ship_name == 'Штраф -3') {
+        this.actionMessage = "Штраф 3 балла!";
+        if (this.anotherLanguage) {
+          this.actionMessage = "Jarima: 3!";
+        }
+        this.changesMessage = "Команда " + this.names[this.highlightedIndex] + " получает штраф в 3 балла!";
+        console.log(this.namesId);
+        console.log(this.highlightedIndex);
         this.scoreService.save_result(this.gameId, this.namesId[this.highlightedIndex], "0", "0", "0", "0", "-3").subscribe(response => {
           if (this.doubleBarrelActive) {
             if (this.doubleBarrelMoves >= 2) {
               this.doubleBarrelActive = false;
-              if (this.doubelBarrelMoveHighlight > 1) {
-                this.moveHighlight(this.doubelBarrelMoveHighlight, false);
+              if (this.doubleBarrelMoveHighlight > 1) {
+                this.moveHighlight(this.doubleBarrelMoveHighlight, false);
+                this.commandService.set_command("player_battlefield," + this.gameId + "," + this.highlightedIndex + "," + Math.random(), 1).subscribe();
               }
               else {
                 this.moveHighlight(1, false);
+                this.commandService.set_command("player_battlefield," + this.gameId + "," + this.highlightedIndex + "," + Math.random(), 1).subscribe();
               }
             }
             else {
-              this.doubelBarrelMoveHighlight = 1;
+              this.doubleBarrelMoveHighlight = 1;
             }
-          } else { this.moveHighlight(1, false); }
+          } else {
+            this.moveHighlight(1, false);
+            this.commandService.set_command("player_battlefield," + this.gameId + "," + this.highlightedIndex + "," + Math.random(), 1).subscribe();
+          }
         });
       }
       else if (ship_name == 'Штраф -1') {
+        this.actionMessage = "Штраф 1 балл!";
+        if (this.anotherLanguage) {
+          this.actionMessage = "Jarima: 1!";
+        }
+        this.changesMessage = "Команда " + this.names[this.highlightedIndex] + " получает штраф в 1 балл!";
         this.scoreService.save_result(this.gameId, this.namesId[this.highlightedIndex], "0", "0", "0", "0", "-1").subscribe(response => {
           if (this.doubleBarrelActive) {
             if (this.doubleBarrelMoves >= 2) {
               this.doubleBarrelActive = false;
-              if (this.doubelBarrelMoveHighlight > 1) {
-                this.moveHighlight(this.doubelBarrelMoveHighlight, false);
+              if (this.doubleBarrelMoveHighlight > 1) {
+                this.moveHighlight(this.doubleBarrelMoveHighlight, false);
+                this.commandService.set_command("player_battlefield," + this.gameId + "," + this.highlightedIndex + "," + Math.random(), 1).subscribe();
               }
               else {
                 this.moveHighlight(1, false);
+                this.commandService.set_command("player_battlefield," + this.gameId + "," + this.highlightedIndex + "," + Math.random(), 1).subscribe();
               }
             }
             else {
-              this.doubelBarrelMoveHighlight = 1;
+              this.doubleBarrelMoveHighlight = 1;
             }
-          } else { this.moveHighlight(1, false); }
+          } else {
+            this.moveHighlight(1, false);
+            this.commandService.set_command("player_battlefield," + this.gameId + "," + this.highlightedIndex + "," + Math.random(), 1).subscribe();
+          }
         });
       }
       else if (ship_name == 'Песня') {
+        this.actionMessage = "Песня!";
+        if (this.anotherLanguage) {
+          this.actionMessage = "Qo'shiq!";
+        }
         if (this.doubleBarrelActive && this.doubleBarrelMoves >= 2) { this.doubleBarrelActive = false; }
       }
       else if (ship_name == 'Всем чётным командам по 5 баллов') {
+        this.actionMessage = "Всем чётным командам по 5 баллов!";
+        if (this.anotherLanguage) {
+          this.actionMessage = "Barcha juft jamoalarga 5 ball!";
+        }
         if (this.doubleBarrelActive && this.doubleBarrelMoves >= 2) { this.doubleBarrelActive = false; }
         this.scoreService.get_current_results(this.gameId).subscribe((response: any) => {
           if (response["message"] == 'No answers') {
@@ -698,16 +933,22 @@ export class ShowBattlefieldComponent {
               }
               place++;
             }
-
+            this.changesMessage = "Следующие команды получают по 5 баллов: ";
             this.teams.forEach(team => {
               if (team.place % 2 === 0) {
-                this.scoreService.save_result(this.gameId, team.team_id, "0", "0", "0", "5", "0").subscribe();
+                this.scoreService.save_result(this.gameId, team.team_id, "0", "0", "0", "5", "0").subscribe(response => {
+                  this.changesMessage += team.name + "; ";
+                });
               }
             });
           }
         });
       }
       else if (ship_name == 'Всем нечётным командам по 5 баллов') {
+        this.actionMessage = "Всем нечётным командам по 5 баллов!";
+        if (this.anotherLanguage) {
+          this.actionMessage = "Barcha toq jamoalarga 5 ball!";
+        }
         if (this.doubleBarrelActive && this.doubleBarrelMoves >= 2) { this.doubleBarrelActive = false; }
         this.scoreService.get_current_results(this.gameId).subscribe((response: any) => {
           if (response["message"] == 'No answers') {
@@ -744,22 +985,38 @@ export class ShowBattlefieldComponent {
               }
               place++;
             }
-
+            this.changesMessage = "Следующие команды получают по 5 баллов: ";
             this.teams.forEach(team => {
               if (team.place % 2 === 1) {
-                this.scoreService.save_result(this.gameId, team.team_id, "0", "0", "0", "5", "0").subscribe();
+                this.scoreService.save_result(this.gameId, team.team_id, "0", "0", "0", "5", "0").subscribe(response => {
+                  this.changesMessage += team.name + "; ";
+                });
               }
             });
           }
         });
       }
       else if (ship_name == 'Особый тур') {
+        this.actionMessage = "Особый тур!";
+        if (this.anotherLanguage) {
+          this.actionMessage = "Maxsus tur!";
+        }
+        this.changesMessage = "Разыгрывается 20 баллов";
         if (this.doubleBarrelActive && this.doubleBarrelMoves >= 2) { this.doubleBarrelActive = false; }
       }
       else if (ship_name == 'Эхолот') {
+        this.actionMessage = "Эхолот!";
+        if (this.anotherLanguage) {
+          this.actionMessage = "Exolot!";
+        }
+        this.changesMessage = "Открыты все соседние ячейки вокруг попадания";
         if (this.doubleBarrelActive && this.doubleBarrelMoves >= 2) { this.doubleBarrelActive = false; }
       }
       else if (ship_name == 'Рокировка') {
+        this.actionMessage = "Рокировка!";
+        if (this.anotherLanguage) {
+          this.actionMessage = "Rokirovka!";
+        }
         if (this.doubleBarrelActive && this.doubleBarrelMoves >= 2) { this.doubleBarrelActive = false; }
         this.scoreService.get_current_results(this.gameId).subscribe((response: any) => {
           if (response["message"] == 'No answers') {
@@ -797,6 +1054,12 @@ export class ShowBattlefieldComponent {
               );
 
               if (tiedTeams.length > 0) {
+                if (tiedTeams.length > 1) {
+                  this.changesMessage = `Команда ${selectedTeam.name} меняется местами с командами: ${tiedTeams.map(t => t.name).join(', ')}`;
+                }
+                else {
+                  this.changesMessage = `Команда ${selectedTeam.name} меняется местами с командой: ${tiedTeams[0].name}`;
+                }
                 const selectedResult = {
                   ship_hit_points: selectedTeam.ship_hit_points.toString(),
                   ship_kill_points: selectedTeam.ship_kill_points.toString(),
@@ -967,6 +1230,11 @@ export class ShowBattlefieldComponent {
     // Skip animation/styling for additional ships
     if (ship.type === 'additional') return;
 
+    if (ship?.type !== 'additional') {
+      this.number_of_killed_ships = this.number_of_killed_ships + 1;
+      localStorage.setItem('killed_ships', this.number_of_killed_ships.toString());
+    }
+
     for (const cell of ship.parsedCells) {
       const gridCell = this.grid[cell.row][cell.col];
       if (ship.name == 'Carrier') {
@@ -1004,6 +1272,10 @@ export class ShowBattlefieldComponent {
     }
   }
 
+  finishGame() {
+    this.showTable();
+  }
+
 
   saveUpdatedFleet() {
     const serializedShips = this.ships.map(ship => ({
@@ -1026,7 +1298,7 @@ export class ShowBattlefieldComponent {
     this.fleetService.updateFleetLayout(this.gameId, serializedShips, Array.from(this.revealedWater).join(',')).subscribe(response => {
       this.commandService.set_command("player_battlefield," + this.gameId + "," + this.highlightedIndex + "," + Math.random(), 1).subscribe((response3: any) => {
         this.commandService.set_command("score," + this.gameId, 3).subscribe((response3: any) => {
-          this.commandService.set_command("battlefield," + this.gameId + "," + this.highlightedIndex + "," + Math.random(), 3).subscribe((response3: any) => {
+          this.commandService.set_command("battlefield," + this.gameId + "," + this.highlightedIndex + "," + this.cellMessage + "," + this.actionMessage + "," + this.changesMessage + "," + Math.random(), 3).subscribe((response3: any) => {
           });
         });
       });
@@ -1042,6 +1314,8 @@ export class ShowBattlefieldComponent {
 
   showTable() {
     this.commandService.set_command("score," + this.gameId, 3).subscribe((response3: any) => {
+      this.commandService.set_command("logo", 1).subscribe((response2: any) => {
+      });
     });
   }
 }

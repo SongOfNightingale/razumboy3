@@ -1,8 +1,10 @@
 import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
+import { trigger, state, style, animate, transition, keyframes } from '@angular/animations';
 import { BattlefieldService } from '../../services/battlefield.service';
 import { UserService } from '../../services/user.service';
 import { MatTableDataSource } from '@angular/material/table';
 import { ScoreService } from '../../services/score.service';
+import { SettingsService } from '../../services/settings.service';
 
 interface Cell {
   row: number;
@@ -30,8 +32,35 @@ interface Team {
 @Component({
   selector: 'app-battlefield-selector',
   templateUrl: './battlefield-selector.component.html',
-  styleUrl: './battlefield-selector.component.css'
+  styleUrls: ['./battlefield-selector.component.css'],
+  animations: [
+    trigger('highlightAnimation', [
+      state('true', style({
+        backgroundColor: '#fff3e0',
+        borderColor: '#ff9800',
+        transform: 'scale(1.05) translateY(-2px)',
+        boxShadow: '0 4px 8px rgba(255, 152, 0, 0.3)'
+      })),
+      state('false', style({
+        backgroundColor: '*',
+        borderColor: '*',
+        transform: 'scale(1) translateY(0)',
+        boxShadow: 'none'
+      })),
+      transition('false => true', [
+        animate('400ms cubic-bezier(0.4, 0, 0.2, 1)', keyframes([
+          style({ transform: 'scale(1) translateY(0)', offset: 0 }),
+          style({ transform: 'scale(1.1) translateY(-4px)', offset: 0.3 }),
+          style({ transform: 'scale(1.05) translateY(-2px)', offset: 1 })
+        ]))
+      ]),
+      transition('true => false', [
+        animate('300ms cubic-bezier(0.4, 0, 0.2, 1)')
+      ])
+    ])
+  ]
 })
+
 export class BattlefieldSelectorComponent implements OnChanges {
 
   grid: Cell[][] = [];
@@ -42,6 +71,7 @@ export class BattlefieldSelectorComponent implements OnChanges {
 
   missileSound = new Audio('/assets/missile.wav');
   explosionSound = new Audio('/assets/explosion.wav');
+  splashSound = new Audio('/assets/water.mp3');
 
   originalList: string[] = ['Alice', 'Bob', 'Charlie', 'Diana', 'Edward'];
   names: string[] = [];
@@ -55,11 +85,40 @@ export class BattlefieldSelectorComponent implements OnChanges {
 
   dataSource = new MatTableDataSource<Team>([]);
 
+  cellMessage: string = '';
+  actionMessage: string = '';
+  changesMessage: string = '';
+
+  nextMessage: string = 'Следующий ход'; // New input for customizable label
+  placeMessage: string = 'Место'; // New input for customizable label
+  teamMessage: string = 'Команда'; // New input for customizable label
+  shipMessage: string = 'Корабли'; // New input for customizable label
+  answerMessage: string = 'Ответы'; // New input for customizable label
+  bonusMessage: string = 'Бонусы'; // New input for customizable label
+  penaltyMessage: string = 'Штрафы'; // New input for customizable label
+  totalMessage: string = 'Всего'; // New input for customizable label
+
   @Input() screenCommand: string = 'empty';
 
-  constructor(private fleetService: BattlefieldService, private userService: UserService, private scoreService: ScoreService) {
-    this.showBattlefield();
-    this.showTable();
+  // popup control
+  showPopup: boolean = false;
+  private popupTimer: any = null;
+
+  constructor(private fleetService: BattlefieldService, private userService: UserService, private scoreService: ScoreService, private settingsService: SettingsService) {
+    this.settingsService.get_numbers().subscribe((response: any) => {
+      if (response[0].language == 'uz') {
+        this.nextMessage = 'Keyingi navbat';
+        this.placeMessage = 'O\'rin';
+        this.teamMessage = 'Jamoa';
+        this.shipMessage = 'Kemalar';
+        this.answerMessage = 'Javoblar';
+        this.bonusMessage = 'Bonus';
+        this.penaltyMessage = 'Jarimalar';
+        this.totalMessage = 'Jami';
+      }
+      this.showBattlefield();
+      this.showTable();
+    });
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -72,6 +131,29 @@ export class BattlefieldSelectorComponent implements OnChanges {
     if (splitted[2]) {
       this.highlightedIndex = parseInt(splitted[2]);
     }
+    if (splitted[4]) {
+      this.cellMessage = splitted[3];
+      this.actionMessage = splitted[4];
+      this.changesMessage = splitted[5];
+    }
+    else {
+      this.cellMessage = '';
+      this.actionMessage = '';
+      this.changesMessage = '';
+    }
+
+    // show popup if any of the messages is not empty
+    const anyMessage = Boolean(this.cellMessage || this.actionMessage || this.changesMessage);
+    this.showPopup = anyMessage;
+    // auto-hide popup after 4s (clear previous timer first)
+    if (this.popupTimer) {
+      clearTimeout(this.popupTimer);
+      this.popupTimer = null;
+    }
+    if (anyMessage) {
+      this.popupTimer = setTimeout(() => { this.showPopup = false; this.popupTimer = null; }, 4000);
+    }
+
     this.showBattlefield();
     this.showTable();
   }

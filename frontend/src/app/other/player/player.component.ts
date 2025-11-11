@@ -14,6 +14,7 @@ export class PlayerComponent {
   mediaQuestionEnabled: boolean = false;
   scoreEnabled: boolean = false;
   battlefieldEnabled: boolean = false;
+  predictionEnabled: boolean = false;
 
   constructor(private commandService: CommandService) {
     setInterval(() => {
@@ -29,6 +30,7 @@ export class PlayerComponent {
             this.mediaQuestionEnabled = false;
             this.scoreEnabled = false;
             this.battlefieldEnabled = false;
+            this.predictionEnabled = false;
           }
           else if (this.screenCommand.startsWith("question")) {
             this.logoEnabled = false;
@@ -36,6 +38,7 @@ export class PlayerComponent {
             this.mediaQuestionEnabled = false;
             this.scoreEnabled = false;
             this.battlefieldEnabled = false;
+            this.predictionEnabled = false;
           }
           else if (this.screenCommand.startsWith("media")) {
             this.logoEnabled = false;
@@ -43,6 +46,7 @@ export class PlayerComponent {
             this.mediaQuestionEnabled = true;
             this.scoreEnabled = false;
             this.battlefieldEnabled = false;
+            this.predictionEnabled = false;
           }
           else if (this.screenCommand.startsWith("score")) {
             this.logoEnabled = false;
@@ -50,6 +54,7 @@ export class PlayerComponent {
             this.mediaQuestionEnabled = false;
             this.scoreEnabled = true;
             this.battlefieldEnabled = false;
+            this.predictionEnabled = false;
           }
           else if (this.screenCommand.startsWith("player_battlefield")) {
             this.logoEnabled = false;
@@ -57,6 +62,15 @@ export class PlayerComponent {
             this.mediaQuestionEnabled = false;
             this.scoreEnabled = false;
             this.battlefieldEnabled = true;
+            this.predictionEnabled = false;
+          }
+          else if (this.screenCommand.startsWith("prediction")) {
+            this.logoEnabled = false;
+            this.questionEnabled = false;
+            this.mediaQuestionEnabled = false;
+            this.scoreEnabled = false;
+            this.battlefieldEnabled = false;
+            this.predictionEnabled = true;
           }
         }
       });

@@ -1,1 +1,39 @@
-<p>settings works!</p>
+<div class="position-relative">
+    <app-sidebar [isSidebarCollapsed]="isSidebarCollapsed" (sidebarToggle)="onSidebarToggle()">
+    </app-sidebar>
+    <button class="sidebar-toggle-btn" [ngClass]="{ 'sidebar-collapsed': isSidebarCollapsed }"
+      (click)="onSidebarToggle()">
+      <i class="fas fa-bars"></i>
+    </button>
+  </div>
+<div class="settings-container">
+    <h2>Настройки</h2>
+
+    <div *ngIf="errorMessage" class="error-message">
+        {{ errorMessage }}
+    </div>
+
+    <div *ngIf="successMessage" class="success-message">
+        {{ successMessage }}
+    </div>
+
+    <form (ngSubmit)="saveSettings()" class="settings-form">
+        <div class="form-group">
+            <label for="o_number">Количество баллов для особого тура:</label>
+            <input type="number" id="o_number" [(ngModel)]="o_number" name="o_number" min="0" [disabled]="isLoading"
+                required />
+        </div>
+
+        <div class="form-group">
+            <label for="language">Язык:</label>
+            <select id="language" [(ngModel)]="language" name="language" [disabled]="isLoading">
+                <option value="ru">Русский</option>
+                <option value="uz">Узбекский</option>
+            </select>
+        </div>
+
+        <button type="submit" [disabled]="isLoading" class="save-button">
+            {{ isLoading ? 'Сохранение...' : 'Сохранить' }}
+        </button>
+    </form>
+</div>

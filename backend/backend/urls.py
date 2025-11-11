@@ -78,6 +78,8 @@ urlpatterns = [
     path('zero_user_answer', myapp.views.zero_user_answer),
 
     path('update_numbers', myapp.views.update_numbers),
-    path('update_special', myapp.views.update_special),
     path('get_numbers', myapp.views.get_numbers),
+    path('set_special_cell', myapp.views.set_special_cell),
+    path('get_special_cells', myapp.views.get_special_cells),
+    path('get_translation', myapp.views.get_translation),
 ]

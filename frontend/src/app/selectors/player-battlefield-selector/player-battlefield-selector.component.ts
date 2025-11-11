@@ -60,6 +60,7 @@ export class PlayerBattlefieldSelectorComponent {
     if (splitted[2]) {
       this.highlightedIndex = splitted[2];
     }
+    console.log(this.highlightedIndex);
     this.fleetService.getQueue(this.gameId).subscribe((response: any) => {
       var currentId;
       console.log(response);

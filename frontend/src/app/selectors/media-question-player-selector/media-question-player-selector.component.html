@@ -9,7 +9,7 @@
         <textarea *ngIf="questionType == 'textarea'" [(ngModel)]="answer" (ngModelChange)="sendProvisionalAnswer()" placeholder="Ваш ответ"
             rows="3"></textarea>
         <button class="button-43" [disabled]="answer === '' && answersArray.length == 0"
-            (click)="sendAnswer()">Отправить</button>
+            (click)="sendAnswer()">{{sendMessage}}</button>
     </div>
     <div class="centered-checkbox" *ngIf="!answerSent && !isDisabled && questionType != 'textarea'">
         <div class="radio" *ngIf="questionType == 'radio' || questionType == 'geolocation'" [ngClass]="{'div-geo' : questionType == 'geolocation'}">
@@ -28,9 +28,9 @@
             </label>
         </div>
         <button class="button-43" [disabled]="answer === '' && answersArray.length == 0"
-            (click)="sendAnswer()">Отправить</button>
+            (click)="sendAnswer()">{{sendMessage}}</button>
     </div>
     <div *ngIf="answerSent">
-        <h1 class="answerSent">Ваш ответ принят</h1>
+        <h1 class="answerSent">{{answerMessage}}</h1>
     </div>
 </div>

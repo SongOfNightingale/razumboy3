@@ -1,5 +1,6 @@
 import { Component, Input, SimpleChanges } from '@angular/core';
 import { QuestionsService } from '../../services/questions.service';
+import { SettingsService } from '../../services/settings.service';
 
 @Component({
   selector: 'app-game-footer',
@@ -22,7 +23,7 @@ export class GameFooterComponent {
   language: string = '';
   current_start_time: any;
 
-  constructor(private questionsService: QuestionsService) {
+  constructor(private questionsService: QuestionsService, private settingsService: SettingsService) {
     //this.showFooter();
   }
 
@@ -31,8 +32,13 @@ export class GameFooterComponent {
     this.questionId = splitted[1];
     this.gameId = splitted[2];
     this.timeLeft = parseInt(splitted[3]);
-    this.questionTime = this.timeLeft;
+    this.questionTime = this.timeLeft;    
     this.timeMessage = 'Осталось ' + this.timeLeft.toString() + ' секунд';
+    this.settingsService.get_numbers().subscribe((response: any) => {
+      if (response[0].language == 'uz') {
+        this.timeMessage = this.timeLeft.toString() + ' soniya qoldi';
+      }
+    });
     this.questionsService.get_question(this.questionId).subscribe((response: any) => {
         this.isDraw = response[6];
         this.startInterval();

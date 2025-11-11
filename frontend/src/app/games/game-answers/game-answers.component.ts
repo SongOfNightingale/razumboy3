@@ -65,19 +65,22 @@ export class GameAnswersComponent {
         this.pointCorrect = '5';
         this.pointIncorrect = '-5';
       }
+      else if (this.question_points == -1) {
+        this.isSpecial = true;
+      }
       this.settingsService.get_numbers().subscribe((response4: any) => {
         this.jackpotNumber = response4[0].o_number;
-        console.log(response4[0]);
-        if (response4[0].special == this.questionNumber) {
-          this.isDisabled = false;
-          this.isSpecial = true;
-        }
-        else if (response4[0].special == 0) {
-          this.isDisabled = false;
-        }
-        else if (response4[0].special != 0) {
-          this.isDisabled = true;
-        }
+        // console.log(response4[0]);
+        // if (response4[0].special == this.questionNumber) {
+        //   this.isDisabled = false;
+        //   this.isSpecial = true;
+        // }
+        // else if (response4[0].special == 0) {
+        //   this.isDisabled = false;
+        // }
+        // else if (response4[0].special != 0) {
+        //   this.isDisabled = true;
+        // }
         this.questionService.get_all_game_questions().subscribe((response3: any) => {
           this.questionAmount = response3.length;
           this.gameQuestions = response3;
@@ -175,19 +178,6 @@ export class GameAnswersComponent {
     });
   }
 
-  changeOption() {
-    if (this.isSpecial == true) {
-      this.settingsService.update_special(this.questionNumber.toString()).subscribe(response => {
-
-      });
-    }
-    else {
-      this.settingsService.update_special("0").subscribe(response => {
-
-      });
-    }
-  }
-
   showCorrectAnswer() {
     this.commandService.set_command("correct_answer," + this.questionId + "," + this.gameId, 3).subscribe((response: any) => {
       this.commandService.set_command("logo", 1).subscribe((response2: any) => {
@@ -203,6 +193,9 @@ export class GameAnswersComponent {
   }
 
   markIncorrect(answer: any) {
+    console.log(answer);
+    answer.is_correct = '0';
+    answer.points = this.pointIncorrect;
     // var teamId = '';
     // var answerTime = answer.time;
     if (answer.time.substring(0, 1) == '1') {
@@ -220,57 +213,90 @@ export class GameAnswersComponent {
       }
     }
 
-    // var jackpotCount = 0;
-    // if (this.isSpecial) {
-    //   for (let i = 0; i < this.userAnswers.length; i++) {
-    //     if (this.userAnswers[i].points > 0) {
-    //       jackpotCount++;
-    //     }
-    //   }
-    //   for (let i = 0; i < this.userAnswers.length; i++) {
-    //     if (parseFloat(this.userAnswers[i].points) > 0) {
-    //       var tmpPoints = this.userAnswers[i].points;
-    //       this.userAnswers[i].points = ((this.jackpotNumber / jackpotCount) + parseInt(this.pointCorrect)).toString();
-    //       if (tmpPoints != this.userAnswers[i].points) {
-    //         var team = this.userAnswers[i].team;
-    //         tmpPoints = this.userAnswers[i].points;
-    //         this.userAnswerService.assign_answer_points(this.gameId, this.questionId, team, "1", tmpPoints, "0").subscribe(response5 => {
-    //           answer.is_correct = '0';
-    //         });
-    //       }
-    //     }
-    //   }
-    // }
-    // else {
-    this.userAnswerService.get_user_answers(this.questionId, this.gameId).subscribe((response3: any) => {
-      for (let i = 0; i < response3.length; i++) {
-        if (response3[i].team_id == answer.team_id) {
-          if (response3[i].checked == null) {
-            response3[i].checked = 0;
+    var jackpotCount = 0;
+    if (this.isSpecial) {
+      this.userAnswerService.get_user_answers(this.questionId, this.gameId).subscribe((response3: any) => {
+        for (let i = 0; i < response3.length; i++) {
+          for (let j = 0; j < this.userAnswers.length; j++) {
+            if (response3[i].team_id == this.userAnswers[j].team_id) {
+              if (response3[i].checked == null) {
+                response3[i].checked = 0;
+              }
+              this.userAnswers[j].checked = response3[i].checked;
+            }
           }
-          answer.checked = response3[i].checked;
         }
-      }
-      this.scoreService.save_result(this.gameId, answer.team_id, "0", "0", (parseInt(this.pointIncorrect) - answer.checked).toString(), "0", "0").subscribe(response2 => {
-        this.userAnswerService.assign_answer_points(this.gameId, this.questionId, answer.team, "0", this.pointIncorrect, this.pointIncorrect).subscribe(response => {
-          answer.is_correct = '0';
-          // this.userService.get_all_game_users().subscribe((response4: any) => {
-          //   for (let i = 0; i < response4.length; i++) {
-          //     if (response4[i].username == answer.team) {
-          //       teamId = response4[i].id;
-          //     }
-          //   }
-          // });
+        for (let i = 0; i < this.userAnswers.length; i++) {
+          if (this.userAnswers[i].points > 0) {
+            jackpotCount++;
+          }
+        }
+        for (let i = 0; i < this.userAnswers.length; i++) {
+          if (parseFloat(this.userAnswers[i].points) > 0) {
+            const originalPoints = this.userAnswers[i].points;
+            this.userAnswers[i].is_correct = '1';
+            const computedPoints = Math.ceil(this.jackpotNumber / jackpotCount).toString();
+            this.userAnswers[i].points = computedPoints;
+            if (originalPoints != this.userAnswers[i].points) {
+              const team = this.userAnswers[i].team;
+              const team_id = this.userAnswers[i].team_id;
+              const checked = this.userAnswers[i].checked;
+              const tmpPoints = this.userAnswers[i].points;
+              const added = (tmpPoints - checked).toString();
+              this.scoreService.save_result(this.gameId, team_id, "0", "0", added, "0", "0").subscribe(response2 => {
+                this.userAnswerService.assign_answer_points(this.gameId, this.questionId, team, "1", tmpPoints, tmpPoints).subscribe(response5 => {
+                });
+              });
+            }
+          }
+          else {
+            const team = this.userAnswers[i].team;
+            const team_id = this.userAnswers[i].team_id;
+            const checked = this.userAnswers[i].checked;
+            const tmpPoints = this.userAnswers[i].points;
+            this.userAnswers[i].is_correct = '0';
+            const added = (tmpPoints - checked).toString();
+            this.scoreService.save_result(this.gameId, team_id, "0", "0", added, "0", "0").subscribe(response2 => {
+              this.userAnswerService.assign_answer_points(this.gameId, this.questionId, team, "0", tmpPoints, tmpPoints).subscribe(response5 => {
+
+              });
+            });
+          }
+        }
+      });
+    }
+    else {
+      this.userAnswerService.get_user_answers(this.questionId, this.gameId).subscribe((response3: any) => {
+        for (let i = 0; i < response3.length; i++) {
+          if (response3[i].team_id == answer.team_id) {
+            if (response3[i].checked == null) {
+              response3[i].checked = 0;
+            }
+            answer.checked = response3[i].checked;
+          }
+        }
+        this.scoreService.save_result(this.gameId, answer.team_id, "0", "0", (parseInt(this.pointIncorrect) - answer.checked).toString(), "0", "0").subscribe(response2 => {
+          this.userAnswerService.assign_answer_points(this.gameId, this.questionId, answer.team, "0", this.pointIncorrect, this.pointIncorrect).subscribe(response => {
+            answer.is_correct = '0';
+            // this.userService.get_all_game_users().subscribe((response4: any) => {
+            //   for (let i = 0; i < response4.length; i++) {
+            //     if (response4[i].username == answer.team) {
+            //       teamId = response4[i].id;
+            //     }
+            //   }
+            // });
+          });
         });
       });
-    });
-    //}
+    }
   }
 
   markCorrect(answer: any) {
     // var teamId = '';
     // var answerTime = answer.time;
-
+    answer.is_correct = '1';
+    answer.points = this.pointCorrect;
+    console.log(answer);
     if (answer.time.substring(0, 1) == '1') {
       answer.timeDigit = parseFloat(answer.time.substring(2, answer.time.length)) + 60;
     }
@@ -295,55 +321,97 @@ export class GameAnswersComponent {
 
     var points = this.pointCorrect;
 
-    // var jackpotCount = 0;
-    // if (this.isSpecial) {
-    //   for (let i = 0; i < this.userAnswers.length; i++) {
-    //     if (this.userAnswers[i].points > 0) {
-    //       jackpotCount++;
-    //     }
-    //   }
-    //   for (let i = 0; i < this.userAnswers.length; i++) {
-    //     console.log(this.userAnswers[i].team + " " + this.userAnswers[i].points);
-    //     if (answer.team == this.userAnswers[i].team || parseFloat(this.userAnswers[i].points) > 0) {
-    //       var tmpPoints = this.userAnswers[i].points;
-    //       this.userAnswers[i].points = ((this.jackpotNumber / jackpotCount) + parseInt(this.pointCorrect)).toString();
-    //       if (this.userAnswers[i].team == answer.team) {
-    //         points = this.userAnswers[i].points;
-    //       }
-    //       else if (tmpPoints != this.userAnswers[i].points) {
-    //         var team = this.userAnswers[i].team;
-    //         tmpPoints = this.userAnswers[i].points;
-    //         this.userAnswerService.assign_answer_points(this.gameId, this.questionId, team, "1", tmpPoints, "0").subscribe(response5 => {
-    //           answer.is_correct = '1';
-    //         });
-    //       }
-    //     }
-    //   }
-    // }
-    // else {
-    this.userAnswerService.get_user_answers(this.questionId, this.gameId).subscribe((response3: any) => {
-      for (let i = 0; i < response3.length; i++) {
-        if (response3[i].team_id == answer.team_id) {
-          if (response3[i].checked == null) {
-            response3[i].checked = 0;
+    var jackpotCount = 0;
+    if (this.isSpecial) {
+
+      this.userAnswerService.get_user_answers(this.questionId, this.gameId).subscribe((response3: any) => {
+        for (let i = 0; i < response3.length; i++) {
+          for (let j = 0; j < this.userAnswers.length; j++) {
+            if (response3[i].team_id == this.userAnswers[j].team_id) {
+              if (response3[i].checked == null) {
+                response3[i].checked = 0;
+              }
+              this.userAnswers[j].checked = response3[i].checked;
+            }
           }
-          answer.checked = response3[i].checked;
         }
-      }
-      this.scoreService.save_result(this.gameId, answer.team_id, "0", "0", (parseInt(points) - answer.checked).toString(), "0", "0").subscribe(response2 => {
-        this.userAnswerService.assign_answer_points(this.gameId, this.questionId, answer.team, "1", points, points).subscribe(response => {
-          answer.is_correct = '1';
-          // this.userService.get_all_game_users().subscribe((response4: any) => {
-          //   for (let i = 0; i < response4.length; i++) {
-          //     if (response4[i].username == answer.team) {
-          //       teamId = response4[i].id;
-          //     }
-          //   }
-          // });
+        for (let i = 0; i < this.userAnswers.length; i++) {
+          if (this.userAnswers[i].points > 0) {
+            jackpotCount++;
+          }
+        }
+        for (let i = 0; i < this.userAnswers.length; i++) {
+          if (answer.team == this.userAnswers[i].team || parseFloat(this.userAnswers[i].points) > 0) {
+            const originalPoints = this.userAnswers[i].points;
+            this.userAnswers[i].is_correct = '1';
+            const computedPoints = Math.ceil(this.jackpotNumber / jackpotCount).toString();
+            this.userAnswers[i].points = computedPoints;
+
+            if (this.userAnswers[i].team == answer.team) {
+              const points = this.userAnswers[i].points;
+              const added = (points - answer.checked).toString();
+              const teamId = answer.team_id;
+              const teamName = answer.team;
+              this.scoreService.save_result(this.gameId, teamId, "0", "0", added, "0", "0").subscribe(response2 => {
+                this.userAnswerService.assign_answer_points(this.gameId, this.questionId, teamName, "1", points, points).subscribe(response5 => {
+
+                });
+              });
+            }
+            else if (originalPoints != this.userAnswers[i].points) {
+              const team = this.userAnswers[i].team;
+              const team_id = this.userAnswers[i].team_id;
+              const checked = this.userAnswers[i].checked;
+              const tmpPoints = this.userAnswers[i].points;
+              const added = (tmpPoints - checked).toString();
+              this.scoreService.save_result(this.gameId, team_id, "0", "0", added, "0", "0").subscribe(response2 => {
+                this.userAnswerService.assign_answer_points(this.gameId, this.questionId, team, "1", tmpPoints, tmpPoints).subscribe(response5 => {
+                });
+              });
+            }
+          }
+          else {
+            const team = this.userAnswers[i].team;
+            const team_id = this.userAnswers[i].team_id;
+            const checked = this.userAnswers[i].checked;
+            const tmpPoints = this.userAnswers[i].points;
+            this.userAnswers[i].is_correct = '0';
+            const added = (tmpPoints - checked).toString();
+            this.scoreService.save_result(this.gameId, team_id, "0", "0", added, "0", "0").subscribe(response2 => {
+              this.userAnswerService.assign_answer_points(this.gameId, this.questionId, team, "0", tmpPoints, tmpPoints).subscribe(response5 => {
+
+              });
+            });
+          }
+        }
+      });
+
+
+    }
+    else {
+      this.userAnswerService.get_user_answers(this.questionId, this.gameId).subscribe((response3: any) => {
+        for (let i = 0; i < response3.length; i++) {
+          if (response3[i].team_id == answer.team_id) {
+            if (response3[i].checked == null) {
+              response3[i].checked = 0;
+            }
+            answer.checked = response3[i].checked;
+          }
+        }
+        this.scoreService.save_result(this.gameId, answer.team_id, "0", "0", (parseInt(points) - answer.checked).toString(), "0", "0").subscribe(response2 => {
+          this.userAnswerService.assign_answer_points(this.gameId, this.questionId, answer.team, "1", points, points).subscribe(response => {
+            answer.is_correct = '1';
+            // this.userService.get_all_game_users().subscribe((response4: any) => {
+            //   for (let i = 0; i < response4.length; i++) {
+            //     if (response4[i].username == answer.team) {
+            //       teamId = response4[i].id;
+            //     }
+            //   }
+            // });
+          });
         });
       });
-    });
-    //}
+    }
 
   }
 

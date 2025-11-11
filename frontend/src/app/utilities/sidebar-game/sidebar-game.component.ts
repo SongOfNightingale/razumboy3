@@ -43,6 +43,9 @@ export class SidebarGameComponent {
       label: 'Показать лого'
     },
     {
+      label: 'Показать предсказание'
+    },
+    {
       label: 'Все игры'
     }
   ];
@@ -73,6 +76,11 @@ export class SidebarGameComponent {
         this.commandService.set_command("logo," + this.gameId, 4).subscribe((response: any) => {
 
         });
+      });
+    }
+    else if (item.label == "Показать предсказание") {
+      this.commandService.set_command("prediction," + this.gameId, 1).subscribe((response: any) => {
+
       });
     }
     else if (item.label == "Все игры") {

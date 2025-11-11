@@ -2,6 +2,7 @@ import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { QuestionsService } from '../../services/questions.service';
 import { UserAnswerService } from '../../services/user-answer.service';
 import { UserService } from '../../services/user.service';
+import { SettingsService } from '../../services/settings.service';
 
 @Component({
   selector: 'app-question-player-selector',
@@ -29,8 +30,17 @@ export class QuestionPlayerSelectorComponent implements OnChanges {
   isDisabled: boolean = false;
   activeUsersNumber: number = 0;
 
-  constructor(private questionService: QuestionsService, private userAnswerService: UserAnswerService, private userService: UserService) {
+  sendMessage: string = 'Отправить';
+  answerMessage: string = 'Ваш ответ принят';
+
+  constructor(private questionService: QuestionsService, private userAnswerService: UserAnswerService, private userService: UserService, private settingsService: SettingsService) {
     this.userId = localStorage.getItem('userId');
+    this.settingsService.get_numbers().subscribe((response: any) => {
+      if (response[0].language = 'uz') {
+        this.sendMessage = 'Yuborish';
+        this.answerMessage = 'Javobingiz qabul qilindi';
+      }
+    });
   }
 
   ngOnChanges(changes: SimpleChanges): void {

@@ -173,6 +173,10 @@ export class GamesComponent {
       this.commandService.set_command("", 8).subscribe((response3: any) => {
         localStorage.setItem("gameId", "");
         localStorage.setItem("gameName", "");
+        localStorage.setItem('index', "");
+        localStorage.setItem('killed_ships', "");
+        localStorage.setItem('played_questions', "");
+        localStorage.setItem('question_types', "");
         window.location.reload();
       });
     });

@@ -40,12 +40,20 @@
 </div>-->
 <div class="below-content">
     <div class="time-content-container">
-        <!-- <label for="timeInput">Время на вопрос:</label><br> -->
-        <!-- <input id="timeInput" type="text" [(ngModel)]="timeInSeconds" /> -->
+        <!-- <label for="timeInput">Время на вопрос:</label><br>
+        <input id="timeInput" type="text" [(ngModel)]="timeInSeconds" /> -->
         <label>Идёт вопрос {{questionNumber}}, оставшееся время <span class="timer">{{timeLeft}}</span></label>
-        <button (click)="pauseQuestions()"><i class="fa-solid fa-pause" style="color: #ff0000;"></i></button>
+        <!-- <button (click)="pauseQuestions()"><i class="fa-solid fa-pause" style="color: #ff0000;"></i></button> -->
         <button (click)="showBattlefield()">Показать поле боя</button>
         <button (click)="showTable()">Показать таблицу</button>
+        <label>{{ highlightedIndex }} / {{ names[highlightedIndex] }}</label>
+        <label>Переключить на: </label>
+        <select id="user" [(ngModel)]="selectedIndex" (change)="onUserChange($event)">
+            <option value="">Выберите команду</option>
+            <option *ngFor="let name of names; index as i" [value]="i">{{ i }} / {{ name }}</option>
+        </select>
+        <label>Количество уничтоженных кораблей: {{ number_of_killed_ships }}</label>
+        <button (click)="finishGame()" *ngIf="number_of_killed_ships == 15"><i class="fa-solid fa-flag-checkered" style="color: #000000;"></i> Завершить игру</button>
     </div>
     <div class="categories-content-container">
         <table>
@@ -65,14 +73,20 @@
                     <td>{{ i + 1 }}</td>
                     <td>{{ question.text }}</td>
                     <td><i class="fa-solid fa-check" style="color: #63E6BE;" *ngIf="question.is_played"></i></td>
-                    <td><input type="number" id="question_points" [(ngModel)]="question.points"></td>
+                    <td>
+                      <select [(ngModel)]="question.question_type" class="question-type-select" (change)="onQuestionTypeChange(i, $event)">
+                        <option *ngFor="let option of questionTypeOptions" [value]="option.value">
+                          {{ option.label }}
+                        </option>
+                      </select>
+                    </td>
                     <!-- <td>{{ question.answerNumber }}</td> -->
                     <td>
                         <button (click)="startQuestion(i+1)"><i class="fa-sharp fa-solid fa-circle-play"
                                 style="color: green;"></i></button>
                     </td>
                     <td>
-                        <button (click)="seeUserAnswers(question.id, i+1, question.points)"><i class="fa-solid fa-eye"
+                        <button (click)="seeUserAnswers(question.id, i+1, question.question_type)"><i class="fa-solid fa-eye"
                                 style="color: blue;"></i></button>
                     </td>
                 </tr>

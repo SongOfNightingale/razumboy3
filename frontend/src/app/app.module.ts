@@ -55,6 +55,7 @@ import { GameHeaderComponent } from './utilities/game-header/game-header.compone
 import { GameFooterComponent } from './utilities/game-footer/game-footer.component';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { PlayerBattlefieldSelectorComponent } from './selectors/player-battlefield-selector/player-battlefield-selector.component';
+import { PredictionSelectorComponent } from './selectors/prediction-selector/prediction-selector.component';
 
 @NgModule({
   declarations: [
@@ -101,6 +102,7 @@ import { PlayerBattlefieldSelectorComponent } from './selectors/player-battlefie
     GameHeaderComponent,
     GameFooterComponent,
     PlayerBattlefieldSelectorComponent,
+    PredictionSelectorComponent,
   ],
   imports: [
     BrowserModule,

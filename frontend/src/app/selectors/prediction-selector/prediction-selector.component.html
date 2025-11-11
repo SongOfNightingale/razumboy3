@@ -1,0 +1,22 @@
+<div class="content-container" *ngIf="!answerSent">
+    <div class="battlefield">
+        <div class="grid">
+            <div class="row labels">
+                <div class="cell label"></div>
+                <div class="cell" *ngFor="let col of columnLabels">{{ col }}</div>
+            </div>
+            <div class="row" *ngFor="let row of grid; let r = index">
+                <div class="cell label">{{ r + 1 }}</div>
+                <div class="cell" *ngFor="let cell of row" (click)="saveCell(cell)" style="position: relative">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="below-content">
+        <button class="button-43" [disabled]="answer === ''"
+            (click)="cellClicked(savedCell)">{{answer}}</button>
+    </div>
+</div>
+<div class="accept-container" *ngIf="answerSent">
+    <h1>{{answerMessage}}</h1>
+</div>

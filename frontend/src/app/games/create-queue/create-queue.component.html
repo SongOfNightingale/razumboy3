@@ -9,7 +9,6 @@
 <div class="container">
   <!-- LEFT: List -->
   <div class="list-panel">
-    <h2 class="section-title">👥 Name List</h2>
     <div cdkDropList [cdkDropListDisabled]="locked" (cdkDropListDropped)="drop($event)">
       <mat-card *ngFor="let name of names; index as i" cdkDrag class="name-card" [class.locked]="locked">
         {{ i+1 }}. {{ name }}

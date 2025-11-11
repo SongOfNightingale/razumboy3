@@ -153,8 +153,8 @@ export class CreateBattlefieldComponent {
       { name: 'Песня', icon: 'assets/Песня.png' },
       { name: 'Эхолот', icon: 'assets/ЭХО.png' },
       { name: 'Всем чётным командам по 5 баллов', icon: 'assets/четные.png' },
-      { name: 'Всем нечётным командам по 5 баллов', icon: 'assets/нечетные.png' }/*,
-      { name: 'Особый тур', icon: 'assets/особый.png' }*/
+      { name: 'Всем нечётным командам по 5 баллов', icon: 'assets/нечетные.png' },
+      { name: 'Особый тур', icon: 'assets/особый.png' }
     ];
 
     additionalShipData.forEach((data, index) => {

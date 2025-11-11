@@ -1,5 +1,6 @@
 import { Component, Input, SimpleChanges } from '@angular/core';
 import { QuestionsService } from '../../services/questions.service';
+import { SettingsService } from '../../services/settings.service';
 
 @Component({
   selector: 'app-game-header',
@@ -17,6 +18,7 @@ export class GameHeaderComponent {
 
   timeLeft: number = 0;
   timerInterval: any;
+  drawMessage: string = 'Разыгровка';
   timeMessage: string = '';
   questionTime: number = 0;
 
@@ -26,7 +28,7 @@ export class GameHeaderComponent {
 
   current_start_time: any;
 
-  constructor(private questionsService: QuestionsService) {
+  constructor(private questionsService: QuestionsService, private settingsService: SettingsService) {
     //this.showHeader();
   }
 
@@ -47,6 +49,12 @@ export class GameHeaderComponent {
     this.timeLeft = parseInt(splitted[3]);
     this.questionTime = this.timeLeft;
     this.timeMessage = 'Осталось ' + this.timeLeft.toString() + ' секунд';
+    this.settingsService.get_numbers().subscribe((response: any) => {
+      if (response[0].language == 'uz') {
+        this.timeMessage = this.timeLeft.toString() + ' soniya qoldi';
+        this.drawMessage = 'Saralash savoli';
+      }
+    });
     this.questionsService.get_question(this.questionId).subscribe((response: any) => {
       this.isDraw = response[6];
       this.startInterval();
@@ -61,6 +69,12 @@ export class GameHeaderComponent {
       this.timeLeft = this.timeLeft - 1;
       // localStorage.setItem("timeLeft", this.timeLeft.toString());
       this.timeMessage = 'Осталось ' + this.timeLeft.toString() + ' секунд';
+      this.settingsService.get_numbers().subscribe((response: any) => {
+      if (response[0].language == 'uz') {
+        this.timeMessage = this.timeLeft.toString() + ' soniya qoldi';
+        this.drawMessage = 'Saralash savoli';
+      }
+    });
       if (this.timeLeft < 1) {
         clearInterval(this.timerInterval);
       }
