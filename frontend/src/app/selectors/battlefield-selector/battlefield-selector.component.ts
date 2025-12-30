@@ -13,7 +13,7 @@ interface Cell {
   isShip: boolean;
   shipId?: string;
   icon?: string;
-  status?: 'hidden' | 'revealed-water' | 'revealed-ship' | 'hit-sunk' | 'revealed-unknown' | 'revealed-carrier';
+  status?: 'hidden' | 'revealed-water' | 'revealed-ship' | 'hit-sunk' | 'revealed-unknown' | 'revealed-carrier' | 'carrier-sunk';
   justRevealed: boolean;
   type: string;
 }
@@ -34,12 +34,18 @@ interface Team {
   templateUrl: './battlefield-selector.component.html',
   styleUrls: ['./battlefield-selector.component.css'],
   animations: [
+    trigger('slideInAnimation', [
+      transition(':enter', [
+        style({ opacity: 0 }), // Initial state
+        animate('1000ms', style({ opacity: 1 })) // Final state
+      ])
+    ]),
     trigger('highlightAnimation', [
       state('true', style({
         backgroundColor: '#fff3e0',
-        borderColor: '#ff9800',
+        // borderColor: '#ff9800',
         transform: 'scale(1.05) translateY(-2px)',
-        boxShadow: '0 4px 8px rgba(255, 152, 0, 0.3)'
+        // boxShadow: '0 4px 8px rgba(255, 152, 0, 0.3)'
       })),
       state('false', style({
         backgroundColor: '*',
@@ -88,6 +94,7 @@ export class BattlefieldSelectorComponent implements OnChanges {
   cellMessage: string = '';
   actionMessage: string = '';
   changesMessage: string = '';
+  swapMessage: string = '';
 
   nextMessage: string = 'Следующий ход'; // New input for customizable label
   placeMessage: string = 'Место'; // New input for customizable label
@@ -102,7 +109,10 @@ export class BattlefieldSelectorComponent implements OnChanges {
 
   // popup control
   showPopup: boolean = false;
-  private popupTimer: any = null;
+  // private popupTimer: any = null;
+
+  lastRevealedCell: { row: number; col: number } | null = null;
+  namesLoaded: boolean = false;
 
   constructor(private fleetService: BattlefieldService, private userService: UserService, private scoreService: ScoreService, private settingsService: SettingsService) {
     this.settingsService.get_numbers().subscribe((response: any) => {
@@ -116,14 +126,15 @@ export class BattlefieldSelectorComponent implements OnChanges {
         this.penaltyMessage = 'Jarimalar';
         this.totalMessage = 'Jami';
       }
-      this.showBattlefield();
-      this.showTable();
+      //this.showBattlefield();
+      //this.showTable();
     });
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     this.screenCommand = changes['screenCommand'].currentValue;
     var splitted = this.screenCommand.split(",");
+    console.log(splitted);
     if (splitted[1]) {
       this.gameId = splitted[1];
       localStorage.setItem('gameId', splitted[1]);
@@ -141,18 +152,25 @@ export class BattlefieldSelectorComponent implements OnChanges {
       this.actionMessage = '';
       this.changesMessage = '';
     }
+    if (splitted[6]) {
+      this.swapMessage = splitted[6];
+    }
+    else {
+      this.swapMessage = '';
+    }
+    console.log(this.swapMessage);
 
     // show popup if any of the messages is not empty
     const anyMessage = Boolean(this.cellMessage || this.actionMessage || this.changesMessage);
     this.showPopup = anyMessage;
     // auto-hide popup after 4s (clear previous timer first)
-    if (this.popupTimer) {
-      clearTimeout(this.popupTimer);
-      this.popupTimer = null;
-    }
-    if (anyMessage) {
-      this.popupTimer = setTimeout(() => { this.showPopup = false; this.popupTimer = null; }, 4000);
-    }
+    // if (this.popupTimer) {
+    //   clearTimeout(this.popupTimer);
+    //   this.popupTimer = null;
+    // }
+    // if (anyMessage) {
+    //   this.popupTimer = setTimeout(() => { this.showPopup = false; this.popupTimer = null; }, 4000);
+    // }
 
     this.showBattlefield();
     this.showTable();
@@ -221,30 +239,36 @@ export class BattlefieldSelectorComponent implements OnChanges {
   }
 
   showBattlefield() {
-    console.log("battlefield");
+    this.namesLoaded = false;
     this.initGrid();
     this.loadFleetData();
     this.originalList = [];
     this.names = [];
+    this.lastRevealedCell = { row: -1, col: -1 };
     this.fleetService.getQueue(this.gameId).subscribe((response: any) => {
       if (response["message"] == "No order") {
         // Example: To load from service instead of hardcoded list
         this.userService.get_all_game_users().subscribe((data: any) => {
-          for (let i = 0; i < data.length; i++) {
-            this.originalList.push(data[i].username);
+          if (this.names.length == 0) {
+            for (let i = 0; i < data.length; i++) {
+              this.originalList.push(data[i].username);
+            }
+            this.names = [...this.originalList];
           }
-          this.names = [...this.originalList];
         });
       }
       else {
         response.sort((a: any, b: any) => a.order - b.order);
         //this.highlightedIndex = response[0].current;
-        console.log(this.highlightedIndex);
-        for (let i = 0; i < response.length; i++) {
-          this.originalList.push(response[i].username);
+        if (this.names.length == 0) {
+          for (let i = 0; i < response.length; i++) {
+            this.originalList.push(response[i].username);
+          }
+          this.names = [...this.originalList];
         }
-        console.log(this.originalList);
-        this.names = [...this.originalList];
+      }
+      if (this.actionMessage.startsWith("Порядок команд реверсирован") || this.actionMessage.startsWith("Revers")) {
+        this.namesLoaded = true;
       }
     });
   }
@@ -278,7 +302,8 @@ export class BattlefieldSelectorComponent implements OnChanges {
             return {
               ...cell,
               status: c.status,
-              revealed: c.revealed
+              revealed: c.revealed,
+              justRevealed: c.justRevealed
             };
           }),
           revealed_cells: ship.revealed_cells || []
@@ -307,13 +332,6 @@ export class BattlefieldSelectorComponent implements OnChanges {
 
   placeShipsOnGrid() {
     for (const ship of this.ships) {
-      // ship.cells = ship.cells.map((coord: any) => {
-      //   const colLetter = coord[0];
-      //   const rowNumber = parseInt(coord.slice(1), 10);
-      //   const col = this.columnLabels.indexOf(colLetter);
-      //   const row = rowNumber - 1;
-      //   return { row, col };
-      // });
       for (const cell of ship.parsedCells) {
         const gridCell = this.grid[cell.row][cell.col];
         gridCell.isShip = true;
@@ -321,6 +339,12 @@ export class BattlefieldSelectorComponent implements OnChanges {
         gridCell.revealed = cell.revealed;
         gridCell.status = cell.status;
         gridCell.type = ship.type;
+        gridCell.justRevealed = cell.justRevealed;
+
+        if (gridCell.justRevealed) {
+          this.lastRevealedCell = { row: cell.row, col: cell.col };
+        }
+
         if (ship.type === 'additional') {
           gridCell.icon = ship.icon || 'fa-bolt';
         }
@@ -329,6 +353,7 @@ export class BattlefieldSelectorComponent implements OnChanges {
   }
 
   applyRevealedWater() {
+    const waterRevealed = this.lastRevealedCell?.row == -1 && this.lastRevealedCell?.col == -1;
     this.revealedWater.forEach(coord => {
       const col = this.columnLabels.indexOf(coord[0]);
       const row = parseInt(coord.slice(1)) - 1;
@@ -337,6 +362,23 @@ export class BattlefieldSelectorComponent implements OnChanges {
         cell.revealed = true;
         cell.status = 'revealed-water';
       }
+      if (waterRevealed) {
+        this.lastRevealedCell = { row: row, col: col };
+      }
     });
+    this.revealedWater.forEach(coord => {
+      const col = this.columnLabels.indexOf(coord[0]);
+      const row = parseInt(coord.slice(1)) - 1;
+      const cell = this.grid[row]?.[col];
+      if(this.lastRevealedCell?.row === row && this.lastRevealedCell?.col === col) {
+        cell.justRevealed = true;
+      }
+    });
+  }
+
+  isInSwap(team: Team): boolean {
+    if (!this.swapMessage) return false;
+    const names = this.swapMessage.split(';').map(s => s.trim()).filter(Boolean);
+    return names.includes(team.name);
   }
 }

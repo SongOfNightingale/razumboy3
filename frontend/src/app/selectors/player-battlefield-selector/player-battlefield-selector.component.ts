@@ -45,9 +45,11 @@ export class PlayerBattlefieldSelectorComponent {
 
   @Input() screenCommand: string = 'empty';
 
+  lastRevealedCell: { row: number; col: number } | null = null;
+
   constructor(private fleetService: BattlefieldService, private userService: UserService, private commandService: CommandService) {
     this.userId = localStorage.getItem('userId');
-    this.showBattlefield();
+    //this.showBattlefield();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -83,6 +85,7 @@ export class PlayerBattlefieldSelectorComponent {
   }
 
   showBattlefield() {
+    this.lastRevealedCell = { row: -1, col: -1 };
     this.initGrid();
     this.loadFleetData();
   }
@@ -126,7 +129,8 @@ export class PlayerBattlefieldSelectorComponent {
             return {
               ...cell,
               status: c.status,
-              revealed: c.revealed
+              revealed: c.revealed,
+              justRevealed: c.justRevealed
             };
           }),
           revealed_cells: ship.revealed_cells || []
@@ -151,13 +155,6 @@ export class PlayerBattlefieldSelectorComponent {
 
   placeShipsOnGrid() {
     for (const ship of this.ships) {
-      // ship.cells = ship.cells.map((coord: any) => {
-      //   const colLetter = coord[0];
-      //   const rowNumber = parseInt(coord.slice(1), 10);
-      //   const col = this.columnLabels.indexOf(colLetter);
-      //   const row = rowNumber - 1;
-      //   return { row, col };
-      // });
       for (const cell of ship.parsedCells) {
         const gridCell = this.grid[cell.row][cell.col];
         gridCell.isShip = true;
@@ -165,6 +162,12 @@ export class PlayerBattlefieldSelectorComponent {
         gridCell.revealed = cell.revealed;
         gridCell.status = cell.status;
         gridCell.type = ship.type;
+        gridCell.justRevealed = cell.justRevealed;
+
+        if (gridCell.justRevealed) {
+          this.lastRevealedCell = { row: cell.row, col: cell.col };
+        }
+
         if (ship.type === 'additional') {
           gridCell.icon = ship.icon || 'fa-bolt';
         }
@@ -173,6 +176,7 @@ export class PlayerBattlefieldSelectorComponent {
   }
 
   applyRevealedWater() {
+    const waterRevealed = this.lastRevealedCell?.row == -1 && this.lastRevealedCell?.col == -1;
     this.revealedWater.forEach(coord => {
       const col = this.columnLabels.indexOf(coord[0]);
       const row = parseInt(coord.slice(1)) - 1;
@@ -180,6 +184,17 @@ export class PlayerBattlefieldSelectorComponent {
       if (cell && !cell.isShip) {
         cell.revealed = true;
         cell.status = 'revealed-water';
+      }
+      if (waterRevealed) {
+        this.lastRevealedCell = { row: row, col: col };
+      }
+    });
+    this.revealedWater.forEach(coord => {
+      const col = this.columnLabels.indexOf(coord[0]);
+      const row = parseInt(coord.slice(1)) - 1;
+      const cell = this.grid[row]?.[col];
+      if (this.lastRevealedCell?.row === row && this.lastRevealedCell?.col === col) {
+        cell.justRevealed = true;
       }
     });
   }
@@ -210,7 +225,7 @@ export class PlayerBattlefieldSelectorComponent {
     this.clearSelection();
     this.disabled = true;
 
-    this.commandService.set_command(this.clickedRow.toString() + "," + this.clickedCol.toString(), 8).subscribe((response3: any) => {
+    this.commandService.set_command(this.clickedRow.toString() + "," + this.clickedCol.toString() + "," + Math.random(), 8).subscribe((response3: any) => {
     });
   }
 }

@@ -1,13 +1,58 @@
 .table-container {
-  padding: 24px;
   background-color: #f9fafc; /* light background */
   border-radius: 16px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
   overflow-x: auto;
-  margin-left: 250px;
+  width: 100%;
 }
 
-.modern-table {
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.header {
+    background-color: #3873C3 !important;
+    font-weight: bold;
+    font-size: 16px;
+    font-family: 'Nokia';
+}
+
+.table-row {
+    background-color: #ffffff;
+    color: #000000;
+    font-weight: bold;
+    font-size: 16px;
+    font-family: 'Nokia';
+}
+
+th,
+td {
+    border: 1px solid #5EBBC2;
+    padding: 12px;
+    text-align: center;
+}
+
+th {
+    background-color: #f2f2f2;
+    cursor: pointer;
+}
+
+th i {
+    margin-left: 5px;
+}
+
+th i.fa-sort-up {
+    color: #007bff;
+}
+
+th i.fa-sort-down {
+    color: #dc3545;
+}
+
+
+/* .modern-table {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
@@ -15,9 +60,9 @@
   border-radius: 12px;
   overflow: hidden;
   box-shadow: inset 0 0 0 1px #e0e0e0;
-}
+} */
 
-.modern-table th,
+/* .modern-table th,
 .modern-table td {
   padding: 16px;
   text-align: left;
@@ -38,7 +83,7 @@
 
 .modern-table tr:last-child td {
   border-bottom: none;
-}
+} */
 
 .sidebar-toggle-btn {
     position: absolute;

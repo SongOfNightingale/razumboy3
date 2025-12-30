@@ -1,55 +1,101 @@
 .battle-container {
     display: flex;
-    width: 100vw;                /* span full viewport width */
+    width: 100vw;
+    /* span full viewport width */
     box-sizing: border-box;
-    padding: 20px 0;             /* vertical spacing, center horizontally via flex */
+    padding: 20px 0;
+    /* vertical spacing, center horizontally via flex */
     border-bottom: 2px solid #ccc;
-    justify-content: center;     /* center inner content horizontally */
-    margin-left: 0;              /* remove previous left offset */
+    justify-content: center;
+    /* center inner content horizontally */
+    margin-left: 0;
+    /* remove previous left offset */
+}
+
+.main-container {
+    display: flex;
+    width: 100%;
+    height: 100vh;
+    box-sizing: border-box;
 }
 
 /* keep two panels side-by-side but constrain their max width so they stay centered */
-.battlefield, .list-panel{
-    flex: 0 1 50%;
-    box-sizing: border-box;
-    padding: 20px;
-    overflow: auto;
-}
-
 .battlefield {
+    flex: 1;
     display: flex;
     justify-content: center;
     align-items: center;
+    background-color: #ffffff;
+    padding: 20px;
+    box-sizing: border-box;
+    overflow: auto;
+}
+
+.right-panel-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    padding: 0;
+    background-color: #AEDDE3;
+}
+
+.list-panel {
+    flex: 0 1 45%;
+    background-color: white;
+    padding: 20px;
+    box-sizing: border-box;
+    overflow-y: auto;
+    overflow-x: hidden;
+    margin: 40px;
+}
+
+/* Popup overlay styles */
+.popup-overlay {
+    flex: 0 1 20%;
+    position: static;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    padding: 20px;
+    margin-left: 40px;
+    margin-right: 40px;
+}
+
+.table-container-wrapper {
+    flex: 0 1 35%;
+    padding: 20px;
+    box-sizing: border-box;
+    overflow-y: auto;
+    overflow-x: auto;
+    margin-left: 20px;
+    margin-right: 20px;
+}
+
+.table-container-wrapper .mat-table {
+    width: 100%;
 }
 
 .below-content {
-    width: 100%;                /* full viewport width */
+    width: 100%;
+    /* full viewport width */
     box-sizing: border-box;
-    padding: 20px 0;             /* vertical padding only */
+    padding: 20px 0;
+    /* vertical padding only */
     background: #fafafa;
-    margin-left: 0;              /* remove previous left offset */
+    margin-left: 0;
+    /* remove previous left offset */
     display: flex;
-    justify-content: center;     /* center inner content horizontally */
+    justify-content: center;
+    /* center inner content horizontally */
 }
 
 /* constrain the table container so it centers nicely */
 .below-content .table-container {
     width: 100%;
     padding: 0 20px;
-    margin-left: 0;     
-}
-
-
-.battlefield {
-    background-color: #f0f8ff;
-    /* light blue */
-}
-
-.list-panel {
-    background-color: #fefefe;
-    /* white */
-    border-left: 2px solid #ddd;
-    /* separation line */
+    margin-left: 0;
 }
 
 .grid {
@@ -62,8 +108,11 @@
 }
 
 .cell {
-    width: 32px;
-    height: 32px;
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    width: 48px;
+    height: 48px;
     border: 1px solid #aaa;
     display: flex;
     align-items: center;
@@ -73,8 +122,15 @@
 }
 
 .cell.label {
-    background: #ddd;
+    background: #5DBCC2;
     font-weight: bold;
+    font-size: 18px;
+}
+
+.cell.letters {
+    background: #5DBCC2;
+    font-weight: bold;
+    font-size: 18px;
 }
 
 .cell.empty {
@@ -83,15 +139,17 @@
 }
 
 .cell.hidden {
-    background: #fff;
+    background: #ffffff;
 }
 
 .cell.revealed-water {
     position: relative;
-    overflow: hidden; /* Ensure the animation stays within the cell */
+    overflow: hidden;
+    /* Ensure the animation stays within the cell */
     background: radial-gradient(120% 80% at 30% 20%, #bfefff 0%, #9fdfff 35%, #7fcfff 100%);
     background-size: 200% 100%;
-    animation: water-motion 6s linear infinite; /* Add animation */
+    animation: water-motion 6s linear infinite;
+    /* Add animation */
 }
 
 /* Animation for moving water */
@@ -99,6 +157,7 @@
     0% {
         background-position: 0% 10%;
     }
+
     100% {
         background-position: 100% 30%;
     }
@@ -112,9 +171,9 @@
     width: 180%;
     height: 40%;
     background: linear-gradient(90deg,
-        rgba(255,255,255,0.18) 0%,
-        rgba(255,255,255,0.05) 40%,
-        rgba(255,255,255,0.18) 100%);
+            rgba(255, 255, 255, 0.18) 0%,
+            rgba(255, 255, 255, 0.05) 40%,
+            rgba(255, 255, 255, 0.18) 100%);
     transform: skewX(-18deg) translateX(-110%);
     filter: blur(6px);
     opacity: 0.9;
@@ -129,17 +188,19 @@
     0% {
         transform: translate(-50%, -50%) scale(0.12);
         opacity: 0.95;
-        box-shadow: 0 0 6px rgba(120,200,255,0.18);
+        box-shadow: 0 0 6px rgba(120, 200, 255, 0.18);
     }
+
     50% {
         transform: translate(-50%, -50%) scale(0.9);
         opacity: 0.6;
-        box-shadow: 0 0 10px rgba(80,170,240,0.14);
+        box-shadow: 0 0 10px rgba(80, 170, 240, 0.14);
     }
+
     100% {
         transform: translate(-50%, -50%) scale(5.5);
         opacity: 0;
-        box-shadow: 0 0 16px rgba(30,120,200,0.0);
+        box-shadow: 0 0 16px rgba(30, 120, 200, 0.0);
     }
 }
 
@@ -150,25 +211,25 @@
     top: 50%;
     width: 8px;
     height: 8px;
-    background: radial-gradient(circle, rgba(255,255,255,0.65) 0% 10%, rgba(255,255,255,0.12) 30%, rgba(255,255,255,0.02) 60%, transparent 70%);
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.65) 0% 10%, rgba(255, 255, 255, 0.12) 30%, rgba(255, 255, 255, 0.02) 60%, transparent 70%);
     border-radius: 50%;
     transform: translate(-50%, -50%) scale(0.12);
     opacity: 0.95;
     pointer-events: none;
-    box-shadow: 0 0 12px rgba(120,200,255,0.15);
+    box-shadow: 0 0 12px rgba(120, 200, 255, 0.15);
     animation: water-ripple 900ms ease-out forwards;
 }
 
 .cell.revealed-unknown {
-  background-color: #28a745;
+    background-color: #28a745;
 }
 
 .cell.revealed-carrier {
-  background-color: #000000;
+    background-color: #e61295;
 }
 
 .cell.revealed-ship {
-    background: #ffc93c;
+    background: #f0ba0a;
 }
 
 .cell.hit-sunk {
@@ -176,16 +237,29 @@
     background: linear-gradient(180deg, #5c0b0b 0%, #8b1a1a 60%);
     color: #fff;
     overflow: visible;
-    border: 1px solid rgba(0,0,0,0.45);
+    border: 1px solid rgba(0, 0, 0, 0.45);
+}
+
+.cell.carrier-sunk {
+    position: relative;
+    background: linear-gradient(180deg, #e61295 0%, #e61295 60%);
+    color: #fff;
+    overflow: visible;
+    border: 1px solid rgba(0, 0, 0, 0.45);
+}
+
+.cell.just-revealed {
+    border: 3px solid red !important;
+    box-shadow: 0 0 8px rgba(255, 0, 0, 0.5);
 }
 
 /* ship silhouette centered and slightly offset downward to look submerged */
 .cell.hit-sunk .ship-silhouette {
     font-size: 20px;
-    color: rgba(20,20,20,0.95);
+    color: rgba(20, 20, 20, 0.95);
     position: relative;
     transform: translateY(4px);
-    text-shadow: 0 1px 0 rgba(255,255,255,0.06);
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 /* small skull mark to emphasize "sunk" (corner badge) */
@@ -195,11 +269,11 @@
     right: 4px;
     font-size: 12px;
     color: #fff;
-    background: rgba(0,0,0,0.45);
+    background: rgba(0, 0, 0, 0.45);
     padding: 2px;
     border-radius: 50%;
     transform: rotate(-10deg);
-    box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
 }
 
 /* subtle smoke blob rising from the sunk cell */
@@ -211,7 +285,7 @@
     transform: translateX(-50%);
     width: 40px;
     height: 18px;
-    background: radial-gradient(circle at 40% 30%, rgba(255,255,255,0.9) 0%, rgba(255,200,120,0.85) 8%, rgba(200,80,30,0.6) 40%, transparent 70%);
+    background: radial-gradient(circle at 40% 30%, rgba(255, 255, 255, 0.9) 0%, rgba(255, 200, 120, 0.85) 8%, rgba(200, 80, 30, 0.6) 40%, transparent 70%);
     filter: blur(6px);
     opacity: 0.85;
     animation: smoke-rise 1600ms ease-in-out infinite;
@@ -226,16 +300,27 @@
     right: 0;
     bottom: 2px;
     height: 6px;
-    background: linear-gradient(90deg, rgba(255,255,255,0.06), rgba(255,255,255,0.12) 50%, rgba(255,255,255,0.06));
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.12) 50%, rgba(255, 255, 255, 0.06));
     filter: blur(1px);
     opacity: 0.95;
     pointer-events: none;
 }
 
 @keyframes smoke-rise {
-    0%   { transform: translateX(-50%) translateY(0) scale(0.9); opacity: 0.9; }
-    50%  { transform: translateX(-50%) translateY(-6px) scale(1.05); opacity: 0.8; }
-    100% { transform: translateX(-50%) translateY(-12px) scale(0.9); opacity: 0; }
+    0% {
+        transform: translateX(-50%) translateY(0) scale(0.9);
+        opacity: 0.9;
+    }
+
+    50% {
+        transform: translateX(-50%) translateY(-6px) scale(1.05);
+        opacity: 0.8;
+    }
+
+    100% {
+        transform: translateX(-50%) translateY(-12px) scale(0.9);
+        opacity: 0;
+    }
 }
 
 /* Missile object (starts above and flies down) */
@@ -272,6 +357,7 @@
     0% {
         opacity: 0;
     }
+
     100% {
         opacity: 1;
     }
@@ -279,8 +365,10 @@
 
 .cell .missile {
     position: absolute;
-    width: 36px; /* Increased size */
-    height: 12px; /* Increased size */
+    width: 36px;
+    /* Increased size */
+    height: 12px;
+    /* Increased size */
     background: gray;
     border-radius: 3px;
     transform: rotate(45deg);
@@ -292,8 +380,10 @@
 
 .cell .explosion {
     position: absolute;
-    width: 50px; /* Increased size */
-    height: 50px; /* Increased size */
+    width: 50px;
+    /* Increased size */
+    height: 50px;
+    /* Increased size */
     background: radial-gradient(circle, orange 40%, red 60%, transparent 70%);
     border-radius: 50%;
     animation: explosion 0.5s ease-out forwards;
@@ -338,10 +428,10 @@
 
 /* Locked state */
 .name-card.locked {
-    background: #e0e0e0;
+    background: #AEDDE3;
     cursor: default;
     transform: none !important;
-    color: #757575;
+    color: #000000;
 }
 
 .name-card.locked:hover {
@@ -349,8 +439,8 @@
 }
 
 .name-card.highlighted {
-    background: linear-gradient(45deg, #fff3e0, #ffe0b2);
-    border-color: #ff9800;
+    background: linear-gradient(45deg, #5DBCC2, #5DBCC2);
+    border-color: #5DBCC2;
     position: relative;
     z-index: 1;
 }
@@ -453,9 +543,24 @@ table {
     margin-top: 20px;
 }
 
+.header {
+    background-color: #3873C3 !important;
+    font-weight: bold;
+    font-size: 16px;
+    font-family: 'Nokia';
+}
+
+.table-row {
+    background-color: #ffffff;
+    color: #000000;
+    font-weight: bold;
+    font-size: 16px;
+    font-family: 'Nokia';
+}
+
 th,
 td {
-    border: 1px solid #ddd;
+    border: 1px solid #5EBBC2;
     padding: 12px;
     text-align: center;
 }
@@ -503,57 +608,60 @@ th i.fa-sort-down {
     padding-left: 5px;
     padding-right: 5px;
 }
+
 /* ...existing code... */
 
-/* Popup overlay styles */
-.popup-overlay {
-  position: fixed;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0,0,0,0.65); /* dim background */
-  z-index: 2000;
-  pointer-events: auto;
-}
 
 .popup-box {
-  background: #000; /* black background as requested */
-  color: #fff;
-  padding: 18px 28px;
-  border-radius: 8px;
-  min-width: 320px;
-  max-width: 90%;
-  text-align: center;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.6);
-  font-size: 18px;
-  line-height: 1.4;
+    color: #fff;
+    padding: 18px 28px;
+    border-radius: 8px;
+    min-width: 320px;
+    max-width: 90%;
+    text-align: center;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+    line-height: 1.4;
+    background-color: #3873C3;
+}
+
+.popup-line-head {
+    margin: 6px 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-size: 24px;
 }
 
 .popup-line {
-  margin: 6px 0;
-  white-space: pre-wrap;
-  word-break: break-word;
+    margin: 6px 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-size: 16px;
 }
 
 @keyframes fire {
     0% {
-        background-color: #ff4500; /* orange-red */
+        background-color: #ff4500;
+        /* orange-red */
         opacity: 1;
     }
+
     50% {
-        background-color: #ff6347; /* tomato */
+        background-color: #ff6347;
+        /* tomato */
         opacity: 0.8;
     }
+
     100% {
-        background-color: #ff4500; /* orange-red */
+        background-color: #ff4500;
+        /* orange-red */
         opacity: 1;
     }
 }
 
 .cell.on-fire {
     position: relative;
-    overflow: visible; /* allow flames to escape the cell */
+    overflow: visible;
+    /* allow flames to escape the cell */
     z-index: 3;
     background-color: orange;
 }
@@ -569,11 +677,11 @@ th i.fa-sort-down {
     height: 46px;
     border-radius: 50% 50% 40% 40% / 60% 60% 40% 40%;
     background:
-      radial-gradient(circle at 50% 20%, rgba(255,255,255,0.95) 0% 6%,
-                                 rgba(255,220,80,0.95) 8% 20%,
-                                 rgba(255,140,30,0.9) 25% 45%,
-                                 rgba(220,40,30,0.75) 50% 65%,
-                                 transparent 70%);
+        radial-gradient(circle at 50% 20%, rgba(255, 255, 255, 0.95) 0% 6%,
+            rgba(255, 220, 80, 0.95) 8% 20%,
+            rgba(255, 140, 30, 0.9) 25% 45%,
+            rgba(220, 40, 30, 0.75) 50% 65%,
+            transparent 70%);
     filter: blur(6px);
     pointer-events: none;
     animation: flame-flicker 900ms ease-in-out infinite;
@@ -593,10 +701,10 @@ th i.fa-sort-down {
     height: 28px;
     border-radius: 50%;
     background:
-      radial-gradient(circle at 50% 18%, rgba(255,240,180,0.9) 0% 8%,
-                                 rgba(255,110,40,0.85) 20% 40%,
-                                 rgba(200,30,20,0.6) 50%,
-                                 transparent 65%);
+        radial-gradient(circle at 50% 18%, rgba(255, 240, 180, 0.9) 0% 8%,
+            rgba(255, 110, 40, 0.85) 20% 40%,
+            rgba(200, 30, 20, 0.6) 50%,
+            transparent 65%);
     filter: blur(4px);
     pointer-events: none;
     animation: ember-rise 700ms ease-in-out infinite;
@@ -605,24 +713,60 @@ th i.fa-sort-down {
 }
 
 /* tiny drifting sparks using box-shadow on a pseudo-element overlay (re-uses ::after via inset shadows trick) */
-.cell.on-fire .spark-helper { display: none; } /* fallback if needed */
+.cell.on-fire .spark-helper {
+    display: none;
+}
+
 
 /* flame animations */
 @keyframes flame-flicker {
-    0%   { transform: translateX(-50%) translateY(0) scale(0.9) rotate(-2deg); opacity: 0.9; }
-    25%  { transform: translateX(-50%) translateY(-6px) scale(1.05) rotate(2deg); opacity: 1; }
-    50%  { transform: translateX(-50%) translateY(-10px) scale(1) rotate(-1deg); opacity: 0.95; }
-    75%  { transform: translateX(-50%) translateY(-6px) scale(1.08) rotate(1deg); opacity: 1; }
-    100% { transform: translateX(-50%) translateY(0) scale(0.92) rotate(-2deg); opacity: 0.9; }
+    0% {
+        transform: translateX(-50%) translateY(0) scale(0.9) rotate(-2deg);
+        opacity: 0.9;
+    }
+
+    25% {
+        transform: translateX(-50%) translateY(-6px) scale(1.05) rotate(2deg);
+        opacity: 1;
+    }
+
+    50% {
+        transform: translateX(-50%) translateY(-10px) scale(1) rotate(-1deg);
+        opacity: 0.95;
+    }
+
+    75% {
+        transform: translateX(-50%) translateY(-6px) scale(1.08) rotate(1deg);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translateX(-50%) translateY(0) scale(0.92) rotate(-2deg);
+        opacity: 0.9;
+    }
 }
 
 @keyframes ember-rise {
-    0%   { transform: translateX(-50%) translateY(0) scale(1); opacity: 0.95; filter: blur(4px); }
-    50%  { transform: translateX(-45%) translateY(-12px) scale(0.95); opacity: 0.85; filter: blur(6px); }
-    100% { transform: translateX(-55%) translateY(-26px) scale(0.85); opacity: 0; filter: blur(8px); }
+    0% {
+        transform: translateX(-50%) translateY(0) scale(1);
+        opacity: 0.95;
+        filter: blur(4px);
+    }
+
+    50% {
+        transform: translateX(-45%) translateY(-12px) scale(0.95);
+        opacity: 0.85;
+        filter: blur(6px);
+    }
+
+    100% {
+        transform: translateX(-55%) translateY(-26px) scale(0.85);
+        opacity: 0;
+        filter: blur(8px);
+    }
 }
 
 /* optional: add a subtle glow on the cell while on fire */
 .cell.on-fire {
-    box-shadow: 0 0 10px rgba(255,140,30,0.18), inset 0 0 8px rgba(255,200,80,0.08);
+    box-shadow: 0 0 10px rgba(255, 140, 30, 0.18), inset 0 0 8px rgba(255, 200, 80, 0.08);
 }

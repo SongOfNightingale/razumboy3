@@ -20,7 +20,7 @@ export class GamePenaltiesComponent {
   }
 
   selectedUser: string = "";
-  users = [{id: "1", username: "name"}];
+  users = [{ id: "1", username: "name" }];
   bonusPenaltyNumber: number = 0;
   gameId: any = "";
 
@@ -42,10 +42,18 @@ export class GamePenaltiesComponent {
 
   savePenalty() {
     if (this.selectedUser != "" && this.bonusPenaltyNumber != 0) {
-      this.scoreService.save_result(this.gameId, this.selectedUser, "0", "0", "0", "0", this.bonusPenaltyNumber.toString()).subscribe(response => {
-        this.subscription.unsubscribe();
-        this.router.navigate(['/games']);
-      });
+      if (this.bonusPenaltyNumber > 0) {
+        this.scoreService.save_result(this.gameId, this.selectedUser, "0", "0", "0", this.bonusPenaltyNumber.toString(), "0").subscribe(response => {
+          this.subscription.unsubscribe();
+          this.router.navigate(['/show-battlefield']);
+        });
+      }
+      else {
+        this.scoreService.save_result(this.gameId, this.selectedUser, "0", "0", "0", "0", this.bonusPenaltyNumber.toString()).subscribe(response => {
+          this.subscription.unsubscribe();
+          this.router.navigate(['/show-battlefield']);
+        });
+      }
     }
     else {
       const dialogRef = this.dialog.open(AcceptDialogComponent, {
