@@ -36,7 +36,7 @@ export class QuestionPlayerSelectorComponent implements OnChanges {
   constructor(private questionService: QuestionsService, private userAnswerService: UserAnswerService, private userService: UserService, private settingsService: SettingsService) {
     this.userId = localStorage.getItem('userId');
     this.settingsService.get_numbers().subscribe((response: any) => {
-      if (response[0].language = 'uz') {
+      if (response[0].language == 'uz') {
         this.sendMessage = 'Yuborish';
         this.answerMessage = 'Javobingiz qabul qilindi';
       }

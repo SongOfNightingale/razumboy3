@@ -108,16 +108,19 @@
         transform: scale(0.3);
         opacity: 0.9;
     }
+
     40% {
         transform: scale(1.8);
         opacity: 1;
         background: radial-gradient(circle, yellow 40%, orange 70%, red 90%);
     }
+
     70% {
         transform: scale(2.5);
         opacity: 0.9;
         background: radial-gradient(circle, white 20%, yellow 50%, red 90%);
     }
+
     100% {
         transform: scale(3.5);
         opacity: 0;
@@ -126,7 +129,8 @@
 
 .cell .missile {
     position: absolute;
-    width: 40px;   /* bigger missile */
+    width: 40px;
+    /* bigger missile */
     height: 12px;
     background: linear-gradient(to right, #444, silver);
     border-radius: 5px;
@@ -140,7 +144,8 @@
 
 .cell .explosion {
     position: absolute;
-    width: 50px;   /* bigger explosion */
+    width: 50px;
+    /* bigger explosion */
     height: 50px;
     background: radial-gradient(circle, orange 40%, red 70%, transparent 80%);
     border-radius: 50%;
@@ -256,6 +261,14 @@
     display: block;
     max-width: 1600px;
     margin: 50px auto;
+    position: sticky;
+    top: 20px;
+    /* adjust if you have a different header height (nav bar is 40px currently) */
+    z-index: 1100;
+    background: #fafafa;
+    /* prevents content underneath from showing through */
+    padding: 8px 16px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
 }
 
 .time-content-container button {
@@ -374,34 +387,35 @@ th i.fa-sort-down {
 }
 
 .cell.revealed-unknown {
-  background-color: #28a745;
+    background-color: #28a745;
 }
 
 .cell.revealed-carrier {
-  background-color: #000000;
+    background-color: #000000;
 }
 
 .question-type-select {
-  padding: 6px 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 14px;
-  cursor: pointer;
-  background-color: #fff;
-  min-width: 180px;
+    padding: 6px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    background-color: #fff;
+    min-width: 180px;
 }
 
 .question-type-select:hover {
-  border-color: #999;
+    border-color: #999;
 }
 
 .question-type-select:focus {
-  outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 3px rgba(0, 123, 255, 0.5);
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 3px rgba(0, 123, 255, 0.5);
 }
 
 .highlighted-row {
-  background-color: lightgreen;  /* Light yellow highlight */
-  font-weight: bold;
+    background-color: lightgreen;
+    /* Light yellow highlight */
+    font-weight: bold;
 }

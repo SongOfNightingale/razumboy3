@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { BattlefieldService } from '../../services/battlefield.service';
 import { UserService } from '../../services/user.service';
 import { QuestionsService } from '../../services/questions.service';
@@ -105,6 +105,8 @@ export class ShowBattlefieldComponent {
 
   carrierNumber: number = 0;
 
+  timerInterval3: any;
+
   // Question type mapping
   questionTypeOptions = [
     { label: 'Стандарт', value: 1 },
@@ -121,7 +123,7 @@ export class ShowBattlefieldComponent {
 
   constructor(private fleetService: BattlefieldService, private userAnswerService: UserAnswerService, private userService: UserService, private questionService: QuestionsService, private commandService: CommandService, private scoreService: ScoreService, private settingsService: SettingsService) {
 
-    setInterval(() => {
+    this.timerInterval3 = setInterval(() => {
       this.commandService.get_command().subscribe((response: any) => {
         if (response[3]) {
           this.screenCommand = response[3];
@@ -138,7 +140,7 @@ export class ShowBattlefieldComponent {
           }
         }
       });
-    }, 1500);
+    }, 1000);
   }
 
   onUserChange(event: Event): void {
@@ -175,6 +177,7 @@ export class ShowBattlefieldComponent {
     const storedNumber = localStorage.getItem('killed_ships');
     const storedPlayedQuestions = localStorage.getItem('played_questions');
     const storedQuestionTypes = localStorage.getItem('question_types');
+    this.carrierNumber = localStorage.getItem('carrier_number') ? parseInt(localStorage.getItem('carrier_number')!) : 0;
     if (storedIndex !== null) {
       if (storedIndex == '') { this.highlightedIndex = 0; }
       else {
@@ -409,6 +412,7 @@ export class ShowBattlefieldComponent {
   ngOnDestroy() {
     clearInterval(this.timerInterval);
     clearInterval(this.timerInterval2);
+    clearInterval(this.timerInterval3);
   }
 
 
@@ -545,6 +549,7 @@ export class ShowBattlefieldComponent {
       if (ship?.name === 'Carrier') {
         is_carrier = true;
         this.carrierNumber = this.carrierNumber + 1;
+        localStorage.setItem('carrier_number', this.carrierNumber.toString());
         const shipIsSunk = this.isShipSunk(ship.id);
 
         if (!shipIsSunk) {
@@ -603,16 +608,11 @@ export class ShowBattlefieldComponent {
       }
     }
 
-    // if (this.isShipSunk(cell.shipId)) {
-    //   this.markSunk(cell.shipId);
-    //   this.revealSurroundingWater(cell.shipId);
-    // }
-    // else {
-    //   cell.status = 'revealed-water';
-    //   const coord = `${this.columnLabels[cell.col]}${cell.row + 1}`;
-    //   this.revealedWater.add(coord);
-    // }
-    this.saveUpdatedFleet();
+    var isHit = false;
+    if (cell.isShip) {
+      isHit = true;
+    }
+    this.saveUpdatedFleet(isHit);
   }
 
   checkPrediction(cell: Cell) {
@@ -849,11 +849,11 @@ export class ShowBattlefieldComponent {
               this.doubleBarrelActive = false;
               if (this.doubleBarrelMoveHighlight > 1) {
                 this.moveHighlight(this.doubleBarrelMoveHighlight, false);
-                this.commandService.set_command("player_battlefield," + this.gameId + "," + this.highlightedIndex + "," + Math.random(), 1).subscribe();
+                setTimeout(() => this.commandService.set_command("player_battlefield," + this.gameId + "," + this.highlightedIndex + "," + Math.random(), 1).subscribe(), 3000);
               }
               else {
                 this.moveHighlight(1, false);
-                this.commandService.set_command("player_battlefield," + this.gameId + "," + this.highlightedIndex + "," + Math.random(), 1).subscribe();
+                setTimeout(() => this.commandService.set_command("player_battlefield," + this.gameId + "," + this.highlightedIndex + "," + Math.random(), 1).subscribe(), 3000);
               }
             }
             else {
@@ -862,7 +862,7 @@ export class ShowBattlefieldComponent {
           }
           else {
             this.moveHighlight(1, false);
-            this.commandService.set_command("player_battlefield," + this.gameId + "," + this.highlightedIndex + "," + Math.random(), 1).subscribe();
+            setTimeout(() => this.commandService.set_command("player_battlefield," + this.gameId + "," + this.highlightedIndex + "," + Math.random(), 1).subscribe(), 3000);
           }
         });
       }
@@ -880,11 +880,11 @@ export class ShowBattlefieldComponent {
               this.doubleBarrelActive = false;
               if (this.doubleBarrelMoveHighlight > 1) {
                 this.moveHighlight(this.doubleBarrelMoveHighlight, false);
-                this.commandService.set_command("player_battlefield," + this.gameId + "," + this.highlightedIndex + "," + Math.random(), 1).subscribe();
+                setTimeout(() => this.commandService.set_command("player_battlefield," + this.gameId + "," + this.highlightedIndex + "," + Math.random(), 1).subscribe(), 3000);
               }
               else {
                 this.moveHighlight(1, false);
-                this.commandService.set_command("player_battlefield," + this.gameId + "," + this.highlightedIndex + "," + Math.random(), 1).subscribe();
+                setTimeout(() => this.commandService.set_command("player_battlefield," + this.gameId + "," + this.highlightedIndex + "," + Math.random(), 1).subscribe(), 3000);
               }
             }
             else {
@@ -892,7 +892,7 @@ export class ShowBattlefieldComponent {
             }
           } else {
             this.moveHighlight(1, false);
-            this.commandService.set_command("player_battlefield," + this.gameId + "," + this.highlightedIndex + "," + Math.random(), 1).subscribe();
+            setTimeout(() => this.commandService.set_command("player_battlefield," + this.gameId + "," + this.highlightedIndex + "," + Math.random(), 1).subscribe(), 3000);
           }
         });
       }
@@ -908,11 +908,11 @@ export class ShowBattlefieldComponent {
               this.doubleBarrelActive = false;
               if (this.doubleBarrelMoveHighlight > 1) {
                 this.moveHighlight(this.doubleBarrelMoveHighlight, false);
-                this.commandService.set_command("player_battlefield," + this.gameId + "," + this.highlightedIndex + "," + Math.random(), 1).subscribe();
+                setTimeout(() => this.commandService.set_command("player_battlefield," + this.gameId + "," + this.highlightedIndex + "," + Math.random(), 1).subscribe(), 3000);
               }
               else {
                 this.moveHighlight(1, false);
-                this.commandService.set_command("player_battlefield," + this.gameId + "," + this.highlightedIndex + "," + Math.random(), 1).subscribe();
+                setTimeout(() => this.commandService.set_command("player_battlefield," + this.gameId + "," + this.highlightedIndex + "," + Math.random(), 1).subscribe(), 3000);
               }
             }
             else {
@@ -920,7 +920,7 @@ export class ShowBattlefieldComponent {
             }
           } else {
             this.moveHighlight(1, false);
-            this.commandService.set_command("player_battlefield," + this.gameId + "," + this.highlightedIndex + "," + Math.random(), 1).subscribe();
+            setTimeout(() => this.commandService.set_command("player_battlefield," + this.gameId + "," + this.highlightedIndex + "," + Math.random(), 1).subscribe(), 3000);
           }
         });
       }
@@ -1278,7 +1278,7 @@ export class ShowBattlefieldComponent {
           gCell.status = 'hidden';
         }
 
-        this.saveUpdatedFleet();
+        this.saveUpdatedFleet(true);
         return;
       }
     }
@@ -1359,7 +1359,7 @@ export class ShowBattlefieldComponent {
   }
 
 
-  saveUpdatedFleet() {
+  saveUpdatedFleet(isHit: boolean) {
     const lastRow = this.lastRevealedCell?.row;
     const lastCol = this.lastRevealedCell?.col;
     const serializedShips = this.ships.map(ship => ({
@@ -1387,9 +1387,10 @@ export class ShowBattlefieldComponent {
       icon: ship.icon || 'fa-bolt'
     }));
     this.fleetService.updateFleetLayout(this.gameId, serializedShips, Array.from(this.revealedWater).join(',')).subscribe(response => {
-      this.commandService.set_command("player_battlefield," + this.gameId + "," + this.highlightedIndex + "," + Math.random(), 1).subscribe((response3: any) => {
-        this.commandService.set_command("battlefield," + this.gameId + "," + this.highlightedIndex + "," + this.cellMessage + "," + this.actionMessage + "," + this.changesMessage + "," + this.swapMessage + "," + Math.random(), 3).subscribe((response3: any) => {
-        });
+      this.commandService.set_command("battlefield," + this.gameId + "," + this.highlightedIndex + "," + this.cellMessage + "," + this.actionMessage + "," + this.changesMessage + "," + this.swapMessage + "," + Math.random(), 3).subscribe((response3: any) => {
+        if (!isHit) {
+          setTimeout(() => this.commandService.set_command("player_battlefield," + this.gameId + "," + this.highlightedIndex + "," + Math.random(), 1).subscribe(), 3000);
+        }
       });
     });
   }

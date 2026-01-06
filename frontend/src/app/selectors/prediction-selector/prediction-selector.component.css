@@ -36,7 +36,6 @@
 
 .below-content {
     align-items: center;
-    width: 100%;
     padding: 20px;
     background: #74B6CC;
 }
@@ -77,8 +76,18 @@
 }
 
 .cell.label {
-    background: #ddd;
+    background: #5DBCC2;
     font-weight: bold;
+}
+
+.cell.letters {
+    background: #5DBCC2;
+    font-weight: bold;
+}
+
+.cell.selected {
+    background-color: black;
+    /* light cyan overlay */
 }
 
 .cell.empty {
