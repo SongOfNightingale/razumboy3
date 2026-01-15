@@ -24,7 +24,7 @@ interface Cell {
 })
 export class PlayerBattlefieldSelectorComponent {
 
-  columnLabels = 'ABCDEFGHIKLMNOP'.split('');
+  columnLabels = 'ABCDEFGHIJKLMNOPQ'.split('');
   grid: Cell[][] = [];
   ships: any[] = [];
   revealedWater: Set<string> = new Set();
@@ -62,18 +62,14 @@ export class PlayerBattlefieldSelectorComponent {
     if (splitted[2]) {
       this.highlightedIndex = splitted[2];
     }
-    console.log(this.highlightedIndex);
     this.fleetService.getQueue(this.gameId).subscribe((response: any) => {
       var currentId;
-      console.log(response);
       response.sort((a: any, b: any) => a.order - b.order);
       for (let i = 0; i < response.length; i++) {
         if (this.highlightedIndex == i) {
           currentId = response[i].id;
         }
       }
-      console.log(currentId);
-      console.log(this.userId);
       if (parseInt(currentId) != parseInt(this.userId)) {
         this.disabled = true;
       }
@@ -92,9 +88,9 @@ export class PlayerBattlefieldSelectorComponent {
 
   initGrid() {
     this.grid = [];
-    for (let row = 0; row < 15; row++) {
+    for (let row = 0; row < 17; row++) {
       const rowCells: Cell[] = [];
-      for (let col = 0; col < 15; col++) {
+      for (let col = 0; col < 17; col++) {
         rowCells.push({
           row,
           col,

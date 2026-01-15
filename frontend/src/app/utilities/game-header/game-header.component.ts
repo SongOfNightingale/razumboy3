@@ -22,7 +22,7 @@ export class GameHeaderComponent {
   timeMessage: string = '';
   questionTime: number = 0;
 
-  imagePath = '/assets/new_header_logo.png';
+  //imagePath = '/assets/new_header_logo.png';
 
   @Input() screenCommand: string = 'empty';
 
@@ -42,7 +42,7 @@ export class GameHeaderComponent {
       this.isHost = true;
       this.isPlayer = false;
     }
-    this.imagePath = '/assets/new_header_logo.png';
+    //this.imagePath = '/assets/new_header_logo.png';
     var splitted = this.screenCommand.split(",");
     this.questionId = splitted[1];
     this.gameId = splitted[2];

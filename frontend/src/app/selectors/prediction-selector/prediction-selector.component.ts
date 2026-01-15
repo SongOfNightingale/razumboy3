@@ -22,7 +22,7 @@ interface Cell {
 export class PredictionSelectorComponent {
   @Input() screenCommand: string = 'empty';
 
-  columnLabels = 'ABCDEFGHIKLMNOP'.split('');
+  columnLabels = 'ABCDEFGHIJKLMNOPQ'.split('');
   grid: Cell[][] = [];
   savedCell!: Cell;
   gameId: string = '';
@@ -31,6 +31,8 @@ export class PredictionSelectorComponent {
   clickedRow: any = '0';
   clickedCol: any = '0';
   answerSent: boolean = false;
+  title: string = '';
+  variant: number = 0;
 
   answerMessage: string = 'Ваш вариант принят';
 
@@ -47,11 +49,32 @@ export class PredictionSelectorComponent {
 
   ngOnChanges(changes: SimpleChanges): void {
     this.screenCommand = changes['screenCommand'].currentValue;
+    this.answerSent = false;
     var splitted = this.screenCommand.split(",");
-    if (splitted[1]) {
-      this.gameId = splitted[1];
-      localStorage.setItem('gameId', splitted[1]);
+    if (splitted[2]) {
+      this.gameId = splitted[2];
+      localStorage.setItem('gameId', splitted[2]);
     }
+    if (splitted[1] == '1') {
+      this.title = 'Предскажите ячейку';
+      this.variant = 1;
+    }
+    else if (splitted[1] == '2') {
+      this.title = 'Поставьте мину';
+      this.variant = 2;
+    }
+    this.settingsService.get_special_cells(this.gameId).subscribe((response: any) => {
+      for (let i = 0; i < response.length; i++) {
+        if (this.userId == response[i].user_id) {
+          if (this.variant == 1 && response[i].cell) {
+              this.answerSent = true;
+          }
+          else if (this.variant == 2 && response[i].cell_two) {
+              this.answerSent = true;
+          }
+        }
+      }
+    });
   }
 
   showBattlefield() {
@@ -60,9 +83,9 @@ export class PredictionSelectorComponent {
 
   initGrid() {
     this.grid = [];
-    for (let row = 0; row < 15; row++) {
+    for (let row = 0; row < 17; row++) {
       const rowCells: Cell[] = [];
-      for (let col = 0; col < 15; col++) {
+      for (let col = 0; col < 17; col++) {
         rowCells.push({
           row,
           col,
@@ -107,7 +130,7 @@ export class PredictionSelectorComponent {
 
   cellClicked(cell: Cell) {
     this.clearSelection();
-    this.settingsService.set_special_cell(this.userId, this.gameId, this.answer).subscribe((response2: any) => {
+    this.settingsService.set_special_cell(this.userId, this.gameId, this.answer, this.variant).subscribe((response2: any) => {
       this.answerSent = true;
     });
   }

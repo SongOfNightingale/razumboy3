@@ -64,6 +64,9 @@ urlpatterns = [
 
     path('get_current_results', myapp.views.get_current_results),
     path('save_result', myapp.views.save_result),
+    path('save_bonus', myapp.views.save_bonus),
+    path('save_penalty', myapp.views.save_penalty),
+    path('set_special', myapp.views.set_special),
     path('save_initial_result', myapp.views.save_initial_result),
     path('update_result', myapp.views.update_result),
 

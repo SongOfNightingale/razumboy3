@@ -27,8 +27,8 @@ interface Ship {
 export class CreateBattlefieldComponent {
 
   grid: Cell[][] = [];
-  columnLabels: string[] = 'ABCDEFGHIJKLMNOP'.split('').filter(l => l !== 'J');
-  rowLabels: number[] = Array.from({ length: 15 }, (_, i) => i + 1);
+  columnLabels: string[] = 'ABCDEFGHIJKLMNOPQ'.split('');
+  rowLabels: number[] = Array.from({ length: 17 }, (_, i) => i + 1);
 
   ships: Ship[] = [];
   selectedShip: Ship | null = null;
@@ -67,7 +67,6 @@ export class CreateBattlefieldComponent {
         });
 
         let shipData = savedShips.ships_data;
-        console.log(shipData);
         shipData.forEach((saved: any) => {
           const ship = this.ships.find(s => s.id === saved.id);
           if (!ship) return;
@@ -103,8 +102,8 @@ export class CreateBattlefieldComponent {
   }
 
   initGrid() {
-    this.grid = Array.from({ length: 15 }, (_, row) =>
-      Array.from({ length: 15 }, (_, col) => ({
+    this.grid = Array.from({ length: 17 }, (_, row) =>
+      Array.from({ length: 17 }, (_, col) => ({
         row,
         col,
       }))
@@ -113,11 +112,12 @@ export class CreateBattlefieldComponent {
 
   initShips() {
     const fleet = [
-      { count: 1, size: 5, name: 'Carrier' },
-      { count: 2, size: 4, name: 'Battleship' },
-      { count: 3, size: 3, name: 'Cruiser' },
-      { count: 4, size: 2, name: 'Destroyer' },
-      { count: 5, size: 1, name: 'Patrol Boat' }
+      { count: 1, size: 6, name: 'Профурсетка' },
+      { count: 2, size: 5, name: 'Бешбармак' },
+      { count: 3, size: 4, name: 'Свингер' },
+      { count: 4, size: 3, name: 'Сэндвич' },
+      { count: 5, size: 2, name: 'Твикс' },
+      { count: 6, size: 1, name: 'Чёрная дыра' }
     ];
 
     let id = 1;
@@ -154,7 +154,9 @@ export class CreateBattlefieldComponent {
       { name: 'Эхолот', icon: 'assets/ЭХО.png' },
       { name: 'Всем чётным командам по 5 баллов', icon: 'assets/четные.png' },
       { name: 'Всем нечётным командам по 5 баллов', icon: 'assets/нечетные.png' },
-      { name: 'Особый тур', icon: 'assets/особый.png' }
+      { name: 'Особый тур', icon: 'assets/особый.png' },
+      { name: 'Джекпот', icon: 'assets/slot-machine.png' },
+      { name: 'Налог', icon: 'assets/tax.png' }
     ];
 
     additionalShipData.forEach((data, index) => {
@@ -192,7 +194,7 @@ export class CreateBattlefieldComponent {
       const r = ship.direction === 'horizontal' ? row : row + i;
       const c = ship.direction === 'horizontal' ? col + i : col;
 
-      if (r >= 15 || c >= 15) return false;
+      if (r >= 17 || c >= 17) return false;
 
       const cell = this.grid[r][c];
       if (cell.occupiedBy) return false;
@@ -202,7 +204,7 @@ export class CreateBattlefieldComponent {
         for (let dx = -1; dx <= 1; dx++) {
           for (let dy = -1; dy <= 1; dy++) {
             const nr = r + dx, nc = c + dy;
-            if (nr >= 0 && nr < 15 && nc >= 0 && nc < 15) {
+            if (nr >= 0 && nr < 17 && nc >= 0 && nc < 17) {
               const neighbor = this.grid[nr][nc];
               if (neighbor.occupiedBy) return false;
             }
@@ -268,8 +270,8 @@ export class CreateBattlefieldComponent {
     this.ships.forEach(ship => {
       for (let attempts = 0; attempts < 1000; attempts++) {
         ship.direction = Math.random() > 0.5 ? 'horizontal' : 'vertical';
-        const r = Math.floor(Math.random() * 15);
-        const c = Math.floor(Math.random() * 15);
+        const r = Math.floor(Math.random() * 17);
+        const c = Math.floor(Math.random() * 17);
         if (this.canPlaceShip(r, c, ship)) {
           this.placeShip(r, c, ship);
           break;
@@ -313,8 +315,8 @@ export class CreateBattlefieldComponent {
         direction: ship.direction,
         cells: ship.cells!.map(c => ({
           coord: `${colLabels[c.col]}${c.row + 1}`,
-          status: 'hidden',      // 👈 default when locking ships
-          revealed: false        // 👈 not revealed yet
+          status: 'hidden',      // default when locking ships
+          revealed: false        // not revealed yet
         })),
         icon: ship.icon || 'fa-bolt'
       }));

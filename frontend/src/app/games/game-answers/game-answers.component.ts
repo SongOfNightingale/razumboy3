@@ -70,7 +70,6 @@ export class GameAnswersComponent {
       }
       this.settingsService.get_numbers().subscribe((response4: any) => {
         this.jackpotNumber = response4[0].o_number;
-        // console.log(response4[0]);
         // if (response4[0].special == this.questionNumber) {
         //   this.isDisabled = false;
         //   this.isSpecial = true;
@@ -193,7 +192,6 @@ export class GameAnswersComponent {
   }
 
   markIncorrect(answer: any) {
-    console.log(answer);
     answer.is_correct = '0';
     answer.points = this.pointIncorrect;
     // var teamId = '';
@@ -296,7 +294,6 @@ export class GameAnswersComponent {
     // var answerTime = answer.time;
     answer.is_correct = '1';
     answer.points = this.pointCorrect;
-    console.log(answer);
     if (answer.time.substring(0, 1) == '1') {
       answer.timeDigit = parseFloat(answer.time.substring(2, answer.time.length)) + 60;
     }

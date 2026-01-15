@@ -46,6 +46,18 @@ export class SidebarGameComponent {
       label: 'Показать предсказание'
     },
     {
+      label: 'Показать мины'
+    },
+    {
+      label: 'Пауза'
+    },
+    {
+      label: 'Посмотреть список предсказаний'
+    },
+    {
+      label: 'Посмотреть список ответов команд'
+    },
+    {
       label: 'Все игры'
     }
   ];
@@ -79,9 +91,32 @@ export class SidebarGameComponent {
       });
     }
     else if (item.label == "Показать предсказание") {
-      this.commandService.set_command("prediction," + this.gameId, 1).subscribe((response: any) => {
+      this.commandService.set_command("prediction,1," + this.gameId + "," + Math.random(), 1).subscribe((response: any) => {
 
       });
+    }
+    else if (item.label == "Показать мины") {
+      this.commandService.set_command("prediction,2," + this.gameId + "," + Math.random(), 1).subscribe((response: any) => {
+
+      });
+    }
+    else if (item.label == "Пауза") {
+      this.commandService.set_command("logo," + this.gameId, 1).subscribe((response3: any) => {
+        this.commandService.set_command("battlefield," + this.gameId, 3).subscribe((response3: any) => {
+          setTimeout(() => {
+            this.commandService.set_command("logo," + this.gameId, 1).subscribe((response3: any) => {
+              this.commandService.set_command("battlefield," + this.gameId, 3).subscribe((response3: any) => {
+              });
+            });
+          }, 5000);
+        });
+      });
+    }
+    else if (item.label == "Посмотреть список предсказаний") {
+      this.router.navigate(['/game-predictions']);
+    }
+    else if (item.label == "Посмотреть список ответов команд") {
+      this.router.navigate(['/game-user-answers']);
     }
     else if (item.label == "Все игры") {
       this.router.navigate(['/games']);

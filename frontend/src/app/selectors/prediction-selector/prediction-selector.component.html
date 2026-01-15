@@ -1,4 +1,5 @@
 <div class="content-container" *ngIf="!answerSent">
+    <h2>{{ title }}</h2>
     <div class="battlefield">
         <div class="grid">
             <div class="row labels">
@@ -7,14 +8,14 @@
             </div>
             <div class="row" *ngFor="let row of grid; let r = index">
                 <div class="cell label">{{ r + 1 }}</div>
-                <div class="cell" *ngFor="let cell of row" [ngClass]="[cell.status, cell.selected ? 'selected' : '']" (click)="saveCell(cell)" style="position: relative">
+                <div class="cell" *ngFor="let cell of row" [ngClass]="[cell.status, cell.selected ? 'selected' : '']"
+                    (click)="saveCell(cell)" style="position: relative">
                 </div>
             </div>
         </div>
     </div>
     <div class="below-content">
-        <button class="button-43" [disabled]="answer === ''"
-            (click)="cellClicked(savedCell)">{{answer}}</button>
+        <button class="button-43" [disabled]="answer === ''" (click)="cellClicked(savedCell)">{{answer}}</button>
     </div>
 </div>
 <div class="accept-container" *ngIf="answerSent">

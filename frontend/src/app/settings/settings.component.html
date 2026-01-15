@@ -18,12 +18,8 @@
     </div>
 
     <form (ngSubmit)="saveSettings()" class="settings-form">
-        <div class="form-group">
-            <label for="o_number">Количество баллов для особого тура:</label>
-            <input type="number" id="o_number" [(ngModel)]="o_number" name="o_number" min="0" [disabled]="isLoading"
-                required />
-        </div>
 
+        <!-- Language -->
         <div class="form-group">
             <label for="language">Язык:</label>
             <select id="language" [(ngModel)]="language" name="language" [disabled]="isLoading">
@@ -31,6 +27,160 @@
                 <option value="uz">Узбекский</option>
             </select>
         </div>
+
+        <!-- Battlefield Size -->
+        <div class="form-group">
+            <label>Размер поля:</label>
+            <div class="size-input-group">
+                <div>
+                    <label for="fieldRows">Строки:</label>
+                    <input type="number" id="fieldRows" [(ngModel)]="fieldRows" name="fieldRows" min="10" max="20" [disabled]="isLoading" required />
+                </div>
+                <div>
+                    <label for="fieldColumns">Столбцы:</label>
+                    <input type="number" id="fieldColumns" [(ngModel)]="fieldColumns" name="fieldColumns" min="10" max="20" [disabled]="isLoading" required />
+                </div>
+            </div>
+        </div>
+
+        <!-- Regular Ships -->
+        <fieldset class="settings-section">
+            <legend>Обычные корабли</legend>
+            <div class="form-group">
+                <label for="ships6">Шестипалубные корабли:</label>
+                <input type="number" id="ships6" [(ngModel)]="ships6" name="ships6" min="0" [disabled]="isLoading" />
+            </div>
+            <div class="form-group">
+                <label for="ships5">Пятипалубные корабли:</label>
+                <input type="number" id="ships5" [(ngModel)]="ships5" name="ships5" min="0" [disabled]="isLoading" />
+            </div>
+            <div class="form-group">
+                <label for="ships4">Четырёхпалубные корабли:</label>
+                <input type="number" id="ships4" [(ngModel)]="ships4" name="ships4" min="0" [disabled]="isLoading" />
+            </div>
+            <div class="form-group">
+                <label for="ships3">Трёхпалубные корабли:</label>
+                <input type="number" id="ships3" [(ngModel)]="ships3" name="ships3" min="0" [disabled]="isLoading" />
+            </div>
+            <div class="form-group">
+                <label for="ships2">Двухпалубные корабли:</label>
+                <input type="number" id="ships2" [(ngModel)]="ships2" name="ships2" min="0" [disabled]="isLoading" />
+            </div>
+            <div class="form-group">
+                <label for="ships1">Однопалубные корабли:</label>
+                <input type="number" id="ships1" [(ngModel)]="ships1" name="ships1" min="0" [disabled]="isLoading" />
+            </div>
+        </fieldset>
+
+        <!-- Special Ships -->
+        <fieldset class="settings-section">
+            <legend>Дополнительные корабли</legend>
+            <div class="form-group">
+                <label for="shipSurprise">Сюрприз:</label>
+                <input type="number" id="shipSurprise" [(ngModel)]="shipSurprise" name="shipSurprise" min="0" [disabled]="isLoading" />
+            </div>
+            <div class="form-group">
+                <label for="shipDoubleBarrel">Двустволка:</label>
+                <input type="number" id="shipDoubleBarrel" [(ngModel)]="shipDoubleBarrel" name="shipDoubleBarrel" min="0" [disabled]="isLoading" />
+            </div>
+            <div class="form-group">
+                <label for="shipReverse">Реверс:</label>
+                <input type="number" id="shipReverse" [(ngModel)]="shipReverse" name="shipReverse" min="0" [disabled]="isLoading" />
+            </div>
+            <div class="form-group">
+                <label for="shipMove5">Переход +5:</label>
+                <input type="number" id="shipMove5" [(ngModel)]="shipMove5" name="shipMove5" min="0" [disabled]="isLoading" />
+            </div>
+            <div class="form-group">
+                <label for="shipMove3">Переход +3:</label>
+                <input type="number" id="shipMove3" [(ngModel)]="shipMove3" name="shipMove3" min="0" [disabled]="isLoading" />
+            </div>
+            <div class="form-group">
+                <label for="shipKaraoke">Караоке:</label>
+                <input type="number" id="shipKaraoke" [(ngModel)]="shipKaraoke" name="shipKaraoke" min="0" [disabled]="isLoading" />
+            </div>
+            <div class="form-group">
+                <label for="shipCastling">Рокировка:</label>
+                <input type="number" id="shipCastling" [(ngModel)]="shipCastling" name="shipCastling" min="0" [disabled]="isLoading" />
+            </div>
+            <div class="form-group">
+                <label for="shipBonus5">Бонус +5:</label>
+                <input type="number" id="shipBonus5" [(ngModel)]="shipBonus5" name="shipBonus5" min="0" [disabled]="isLoading" />
+            </div>
+            <div class="form-group">
+                <label for="shipBonus3">Бонус +3:</label>
+                <input type="number" id="shipBonus3" [(ngModel)]="shipBonus3" name="shipBonus3" min="0" [disabled]="isLoading" />
+            </div>
+            <div class="form-group">
+                <label for="shipBonus1">Бонус +1:</label>
+                <input type="number" id="shipBonus1" [(ngModel)]="shipBonus1" name="shipBonus1" min="0" [disabled]="isLoading" />
+            </div>
+            <div class="form-group">
+                <label for="shipPenalty5">Штраф -5:</label>
+                <input type="number" id="shipPenalty5" [(ngModel)]="shipPenalty5" name="shipPenalty5" min="0" [disabled]="isLoading" />
+            </div>
+            <div class="form-group">
+                <label for="shipPenalty3">Штраф -3:</label>
+                <input type="number" id="shipPenalty3" [(ngModel)]="shipPenalty3" name="shipPenalty3" min="0" [disabled]="isLoading" />
+            </div>
+            <div class="form-group">
+                <label for="shipPenalty1">Штраф -1:</label>
+                <input type="number" id="shipPenalty1" [(ngModel)]="shipPenalty1" name="shipPenalty1" min="0" [disabled]="isLoading" />
+            </div>
+            <div class="form-group">
+                <label for="shipSong">Песня:</label>
+                <input type="number" id="shipSong" [(ngModel)]="shipSong" name="shipSong" min="0" [disabled]="isLoading" />
+            </div>
+            <div class="form-group">
+                <label for="shipSonar">Эхолот:</label>
+                <input type="number" id="shipSonar" [(ngModel)]="shipSonar" name="shipSonar" min="0" [disabled]="isLoading" />
+            </div>
+            <div class="form-group">
+                <label for="shipEvenBonus">Всем чётным командам по 5 баллов:</label>
+                <input type="number" id="shipEvenBonus" [(ngModel)]="shipEvenBonus" name="shipEvenBonus" min="0" [disabled]="isLoading" />
+            </div>
+            <div class="form-group">
+                <label for="shipOddBonus">Всем нечётным командам по 5 баллов:</label>
+                <input type="number" id="shipOddBonus" [(ngModel)]="shipOddBonus" name="shipOddBonus" min="0" [disabled]="isLoading" />
+            </div>
+            <div class="form-group">
+                <label for="shipSpecialTour">Особый тур:</label>
+                <input type="number" id="shipSpecialTour" [(ngModel)]="shipSpecialTour" name="shipSpecialTour" min="0" [disabled]="isLoading" />
+            </div>
+            <div class="form-group">
+                <label for="shipJackpot">Джекпот:</label>
+                <input type="number" id="shipJackpot" [(ngModel)]="shipJackpot" name="shipJackpot" min="0" [disabled]="isLoading" />
+            </div>
+            <div class="form-group">
+                <label for="shipTax">Налог:</label>
+                <input type="number" id="shipTax" [(ngModel)]="shipTax" name="shipTax" min="0" [disabled]="isLoading" />
+            </div>
+        </fieldset>
+
+        <!-- Points Settings -->
+        <fieldset class="settings-section">
+            <legend>Системы начисления баллов</legend>
+            <div class="form-group">
+                <label for="pointsSong">Количество баллов в ячейке Песня:</label>
+                <input type="number" id="pointsSong" [(ngModel)]="pointsSong" name="pointsSong" min="0" [disabled]="isLoading" />
+            </div>
+            <div class="form-group">
+                <label for="pointsSpecialTour">Количество баллов в особом туре:</label>
+                <input type="number" id="pointsSpecialTour" [(ngModel)]="pointsSpecialTour" name="pointsSpecialTour" min="0" [disabled]="isLoading" />
+            </div>
+            <div class="form-group">
+                <label for="taxPercent">Процент налога (0-100):</label>
+                <input type="number" id="taxPercent" [(ngModel)]="taxPercent" name="taxPercent" min="0" max="100" [disabled]="isLoading" />
+            </div>
+            <div class="form-group">
+                <label for="pointsPrediction">Баллы за предсказание:</label>
+                <input type="number" id="pointsPrediction" [(ngModel)]="pointsPrediction" name="pointsPrediction" min="0" [disabled]="isLoading" />
+            </div>
+            <div class="form-group">
+                <label for="penaltyMine">Штраф за мину:</label>
+                <input type="number" id="penaltyMine" [(ngModel)]="penaltyMine" name="penaltyMine" min="0" [disabled]="isLoading" />
+            </div>
+        </fieldset>
 
         <button type="submit" [disabled]="isLoading" class="save-button">
             {{ isLoading ? 'Сохранение...' : 'Сохранить' }}

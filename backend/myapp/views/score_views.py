@@ -2,7 +2,7 @@ import json
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
-from myapp.models import Penalties, Results
+from myapp.models import Penalties, Prediction, Results
 
 @csrf_exempt
 def get_current_results(request):
@@ -55,6 +55,66 @@ def save_result(request):
             new_results_data = Results(game_id = game_id, user_id = user_id, ship_hit_points = ship_hit_points, ship_kill_points = ship_kill_points, question_points = question_points, bonus_points = bonus_points, penalty_points = penalty_points)
             new_results_data.save()
             return JsonResponse({"message": "Data updated"})
+    except Exception as e:
+        return JsonResponse({"message": e})
+    
+@csrf_exempt
+def save_bonus(request):
+    if request.method == "OPTIONS":
+        return JsonResponse({"message": "OK"})
+    try:
+        game_id = request.GET.get("game_id")
+        user_id = request.GET.get("user_id")     
+        bonus_points = request.GET.get("bonus_points")
+        try:
+            results_data = Results.objects.get(game_id=game_id, user_id=user_id)
+            results_data.bonus_points = results_data.bonus_points + int(bonus_points)
+            results_data.save()
+            prediction_data = Prediction.objects.get(game_id=game_id, user_id=user_id)
+            prediction_data.special = 1
+            prediction_data.save()
+            return JsonResponse({"message": "Data updated"})
+        except Results.DoesNotExist:
+            new_results_data = Results(game_id = game_id, user_id = user_id, ship_hit_points = 0, ship_kill_points = 0, question_points = 0, bonus_points = bonus_points, penalty_points = 0)
+            new_results_data.save()
+            return JsonResponse({"message": "Data updated"})
+    except Exception as e:
+        return JsonResponse({"message": e})
+    
+@csrf_exempt
+def save_penalty(request):
+    if request.method == "OPTIONS":
+        return JsonResponse({"message": "OK"})
+    try:
+        game_id = request.GET.get("game_id")
+        user_id = request.GET.get("user_id")     
+        penalty_points = request.GET.get("penalty_points")
+        try:
+            results_data = Results.objects.get(game_id=game_id, user_id=user_id)
+            results_data.penalty_points = results_data.penalty_points + int(penalty_points)
+            results_data.save()
+            return JsonResponse({"message": "Data updated"})
+        except Results.DoesNotExist:
+            new_results_data = Results(game_id = game_id, user_id = user_id, ship_hit_points = 0, ship_kill_points = 0, question_points = 0, bonus_points = 0, penalty_points = penalty_points)
+            new_results_data.save()
+            return JsonResponse({"message": "Data updated"})
+    except Exception as e:
+        return JsonResponse({"message": e})
+    
+@csrf_exempt
+def set_special(request):
+    if request.method == "OPTIONS":
+        return JsonResponse({"message": "OK"})
+    try:
+        game_id = request.GET.get("game_id")
+        user_id = request.GET.get("user_id")     
+        try:
+            results_data = Prediction.objects.get(game_id=game_id, user_id=user_id)
+            results_data.special = 1
+            results_data.save()
+            return JsonResponse({"message": "Data updated"})
+        except Prediction.DoesNotExist:
+            return JsonResponse({"message": "No data"})
     except Exception as e:
         return JsonResponse({"message": e})
     

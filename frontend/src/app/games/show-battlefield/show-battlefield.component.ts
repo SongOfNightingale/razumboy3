@@ -6,6 +6,7 @@ import { CommandService } from '../../services/command.service';
 import { UserAnswerService } from '../../services/user-answer.service';
 import { ScoreService } from '../../services/score.service';
 import { SettingsService } from '../../services/settings.service';
+import { Observable, forkJoin } from 'rxjs';
 
 interface Cell {
   row: number;
@@ -38,7 +39,7 @@ interface Team {
 export class ShowBattlefieldComponent {
 
   grid: Cell[][] = [];
-  columnLabels = 'ABCDEFGHIKLMNOP'.split('');
+  columnLabels = 'ABCDEFGHIJKLMNOPQ'.split('');
   ships: any[] = [];
   revealedWater: Set<string> = new Set();
   gameId: any; // Replace with actual game ID
@@ -106,6 +107,9 @@ export class ShowBattlefieldComponent {
   carrierNumber: number = 0;
 
   timerInterval3: any;
+
+  bonusPoints: number = 0;
+  penaltyPoints: number = 0;
 
   // Question type mapping
   questionTypeOptions = [
@@ -222,7 +226,6 @@ export class ShowBattlefieldComponent {
           this.userService.get_all_game_users().subscribe((data: any) => {
             this.activeUsers = data;
             this.activeUsersNumber = data.length;
-            console.log(this.activeUsersNumber);
             for (let i = 0; i < data.length; i++) {
               this.originalList.push(data[i].username);
               this.originalListId.push(data[i].id);
@@ -232,7 +235,6 @@ export class ShowBattlefieldComponent {
           });
         }
         else {
-          console.log(response);
           response.sort((a: any, b: any) => a.order - b.order);
           //this.highlightedIndex = response[0].current;
           this.activeUsers = response;
@@ -307,14 +309,11 @@ export class ShowBattlefieldComponent {
       var timeInMilliseconds = currentTime.getTime();
       this.timeLeft = this.timeLeft - 1;
       //NEW
-      console.log(this.timeLeft);
       if (this.timeLeft <= 0) {
         //END NEW
         clearInterval(this.timerInterval);
         clearInterval(this.timerInterval2);
-        console.log(this.activeUsersNumber);
         if (this.answeredUsers[this.questionNumber] < this.activeUsersNumber) {
-          console.log(this.answeredUsers[this.questionNumber]);
           for (let i = 0; i < this.activeUsers.length; i++) {
             var answered = false;
             for (let j = 0; j < this.userAnswers.length; j++) {
@@ -322,29 +321,24 @@ export class ShowBattlefieldComponent {
                 answered = true;
               }
             }
-            console.log(answered);
             if (!answered) {
               var question = this.gameQuestions[this.questionNumber - 1];
               var numberQuestion = this.questionNumber;
-              console.log(question);
               this.userAnswerService.get_provisional_answer(this.gameId, question.id, this.activeUsers[i].id).subscribe((response2: any) => {
                 //NEW            
                 if (response2["message"]) {
                   //END NEW
                   this.userAnswerService.set_user_answer("", this.gameId, question.id, this.activeUsers[i].id, this.timeInSeconds.toString()).subscribe(response => {
-                    console.log("No answer from user");
                   });
                 }
                 else {
                   this.userAnswerService.set_user_answer(response2[0].toString(), this.gameId, question.id, this.activeUsers[i].id, this.timeInSeconds.toString()).subscribe(response => {
-                    console.log("No answer from user");
                   });
                 }
               });
             }
           }
         }
-        console.log('Time is up!');
         //this.commandService.set_command("battlefield," + this.gameId + "," + this.highlightedIndex + "," + Math.random(), 3).subscribe((response3: any) => {
         this.commandService.set_command("logo", 7).subscribe((response3: any) => {
 
@@ -418,9 +412,9 @@ export class ShowBattlefieldComponent {
 
   initGrid() {
     this.grid = [];
-    for (let row = 0; row < 15; row++) {
+    for (let row = 0; row < 17; row++) {
       const rowCells: Cell[] = [];
-      for (let col = 0; col < 15; col++) {
+      for (let col = 0; col < 17; col++) {
         rowCells.push({
           row,
           col,
@@ -506,6 +500,9 @@ export class ShowBattlefieldComponent {
     this.changesMessage = "";
     this.swapMessage = "";
 
+    this.bonusPoints = 0;
+    this.penaltyPoints = 0;
+
     cell.revealed = true;
     this.cellMessage = 'Открыта ячейка: ' + this.cellToCoord(cell.row, cell.col);
     this.lastRevealedCell = { row: cell.row, col: cell.col };
@@ -514,12 +511,13 @@ export class ShowBattlefieldComponent {
       this.doubleBarrelMoves += 1;
     }
 
+    this.checkPrediction2(cell);
+
     if (cell.isShip && cell.shipId) {
       cell.status = 'revealed-ship';
       var is_carrier = false;
 
       const ship = this.ships.find(s => s.id === cell.shipId);
-      console.log(ship);
       this.markShipCellRevealed(cell.shipId, cell.row, cell.col);
 
       if (ship?.type === 'additional') {
@@ -542,11 +540,11 @@ export class ShowBattlefieldComponent {
         cell.justRevealed = false;
       }, 800);
 
-      if (!ship?.name.toString().startsWith("Штраф")) {
+      if (!ship?.name.toString().startsWith("Штраф") && !ship?.name.toString().startsWith("Налог")) {
         this.checkPrediction(cell);
       }
 
-      if (ship?.name === 'Carrier') {
+      if (ship?.name === 'Профурсетка') {
         is_carrier = true;
         this.carrierNumber = this.carrierNumber + 1;
         localStorage.setItem('carrier_number', this.carrierNumber.toString());
@@ -606,24 +604,34 @@ export class ShowBattlefieldComponent {
         }
         this.moveHighlight(1, false);
       }
+      this.saveUpdatedFleet(false);
     }
-
-    var isHit = false;
-    if (cell.isShip) {
-      isHit = true;
-    }
-    this.saveUpdatedFleet(isHit);
   }
 
   checkPrediction(cell: Cell) {
     const cell_string = this.cellToCoord(cell.row, cell.col);
-    console.log(cell_string);
-    console.log(this.predictions);
     for (let i = 0; i < this.predictions.length; i++) {
       if (this.predictions[i].cell === cell_string) {
         this.cellMessage += "; Команда " + this.predictions[i].user_name + " угадала ячейку и получает 10 очков!";
-        this.scoreService.save_result(this.gameId, this.predictions[i].user_id, "0", "0", "0", "10", "0").subscribe(response => {
-        });
+        if (this.names[this.highlightedIndex] == this.predictions[i].user_name) {
+          this.bonusPoints += 10;
+          this.scoreService.set_special(this.gameId, this.predictions[i].user_id).subscribe(response => {
+          });
+        }
+        else {
+          this.scoreService.save_bonus(this.gameId, this.predictions[i].user_id, "10").subscribe(response => {
+          });
+        }
+      }
+    }
+  }
+
+  checkPrediction2(cell: Cell) {
+    const cell_string = this.cellToCoord(cell.row, cell.col);
+    for (let i = 0; i < this.predictions.length; i++) {
+      if (this.predictions[i].cell_two === cell_string) {
+        this.cellMessage += "; Команда " + this.names[this.highlightedIndex] + " попала в мину " + this.predictions[i].user_name + " и получает штраф в 5 баллов!";
+        this.penaltyPoints -= 5;
       }
     }
   }
@@ -634,7 +642,7 @@ export class ShowBattlefieldComponent {
         const nr = row + dx;
         const nc = col + dy;
 
-        if (nr >= 0 && nr < 15 && nc >= 0 && nc < 15) {
+        if (nr >= 0 && nr < 17 && nc >= 0 && nc < 17) {
           const neighborCell = this.grid[nr][nc];
 
           // Reveal only if hidden
@@ -675,30 +683,34 @@ export class ShowBattlefieldComponent {
       if (this.doubleBarrelActive && this.doubleBarrelMoves >= 2) { this.doubleBarrelActive = false; }
       if (is_sunk) {
         if (is_carrier) {
-          this.scoreService.save_result(this.gameId, this.namesId[this.highlightedIndex], "0", "10", "0", "0", "0").subscribe(response => {
+          this.scoreService.save_result(this.gameId, this.namesId[this.highlightedIndex], "0", "10", "0", this.bonusPoints.toString(), this.penaltyPoints.toString()).subscribe(response => {
             this.actionMessage = "Профурсетка потоплена!";
             this.changesMessage = "Команда " + this.names[this.highlightedIndex] + " получает 10 очков за потопление Профурсетки!";
             this.carrierNumber = 0;
+            this.saveUpdatedFleet(true);
           });
         }
         else {
-          this.scoreService.save_result(this.gameId, this.namesId[this.highlightedIndex], "0", "5", "0", "0", "0").subscribe(response => {
-            this.actionMessage = "Корабль потоплен!";
+          this.scoreService.save_result(this.gameId, this.namesId[this.highlightedIndex], "0", "5", "0", this.bonusPoints.toString(), this.penaltyPoints.toString()).subscribe(response => {
+            this.actionMessage = ship_name + " потоплен(а)!";
             this.changesMessage = "Команда " + this.names[this.highlightedIndex] + " получает 5 очков за потопление!";
+            this.saveUpdatedFleet(true);
           });
         }
       }
       else {
         if (is_carrier) {
-          this.scoreService.save_result(this.gameId, this.namesId[this.highlightedIndex], this.carrierNumber.toString(), "0", "0", "0", "0").subscribe(response => {
-            this.actionMessage = "Попадание в Профурсетку!";
-            this.changesMessage = "Команда " + this.names[this.highlightedIndex] + " получает " + this.carrierNumber.toString() + " очко(в) за попадание в Профурсетку!";
+          this.scoreService.save_result(this.gameId, this.namesId[this.highlightedIndex], this.carrierNumber.toString(), "0", "0", this.bonusPoints.toString(), this.penaltyPoints.toString()).subscribe(response => {
+            this.actionMessage = "Попадание в корабль!";
+            this.changesMessage = "Команда " + this.names[this.highlightedIndex] + " получает " + this.carrierNumber.toString() + " очко(в) за попадание!";
+            this.saveUpdatedFleet(true);
           });
         }
         else {
-          this.scoreService.save_result(this.gameId, this.namesId[this.highlightedIndex], "1", "0", "0", "0", "0").subscribe(response => {
+          this.scoreService.save_result(this.gameId, this.namesId[this.highlightedIndex], "1", "0", "0", this.bonusPoints.toString(), this.penaltyPoints.toString()).subscribe(response => {
             this.actionMessage = "Попадание в корабль!";
             this.changesMessage = "Команда " + this.names[this.highlightedIndex] + " получает 1 очко за попадание!";
+            this.saveUpdatedFleet(true);
           });
         }
       }
@@ -710,6 +722,7 @@ export class ShowBattlefieldComponent {
           this.actionMessage = "Syurpriz";
         }
         if (this.doubleBarrelActive && this.doubleBarrelMoves >= 2) { this.doubleBarrelActive = false; }
+        this.saveUpdatedFleet(true);
       }
       else if (ship_name == 'Двустволка') {
         this.doubleBarrelActive = true;
@@ -719,6 +732,7 @@ export class ShowBattlefieldComponent {
           this.actionMessage = "Ikkitalik zarba!";
         }
         this.changesMessage = "Команда " + this.names[this.highlightedIndex] + " может сделать ещё два выстрела!";
+        this.saveUpdatedFleet(true);
       }
       else if (ship_name == 'Реверс') {
         this.reversedNames = [...this.names].reverse();
@@ -751,7 +765,7 @@ export class ShowBattlefieldComponent {
           if (this.anotherLanguage) {
             this.actionMessage = "Revers!";
           }
-          this.commandService.set_command("battlefield," + this.gameId + "," + this.highlightedIndex + "," + Math.random(), 3).subscribe();
+          this.saveUpdatedFleet(true);
         });
       }
       else if (ship_name == 'Переход +5') {
@@ -776,6 +790,7 @@ export class ShowBattlefieldComponent {
           }
           this.moveHighlight(5, false);
         }
+        this.saveUpdatedFleet(true);
       }
       else if (ship_name == 'Переход +3') {
         if (this.doubleBarrelActive) {
@@ -799,6 +814,7 @@ export class ShowBattlefieldComponent {
           }
           this.moveHighlight(3, false);
         }
+        this.saveUpdatedFleet(true);
       }
       else if (ship_name == 'Караоке') {
         this.actionMessage = "Караоке!";
@@ -806,6 +822,7 @@ export class ShowBattlefieldComponent {
           this.actionMessage = "Karaoke!";
         }
         if (this.doubleBarrelActive && this.doubleBarrelMoves >= 2) { this.doubleBarrelActive = false; }
+        this.saveUpdatedFleet(true);
       }
       else if (ship_name == 'Бонус +5') {
         this.actionMessage = "Бонус 5 очков!";
@@ -813,8 +830,10 @@ export class ShowBattlefieldComponent {
           this.actionMessage = "Bonus: 5!";
         }
         this.changesMessage = "Команда " + this.names[this.highlightedIndex] + " получает 5 бонусных очков!";
-        this.scoreService.save_result(this.gameId, this.namesId[this.highlightedIndex], "0", "0", "0", "5", "0").subscribe(response => {
+        this.bonusPoints += 5;
+        this.scoreService.save_result(this.gameId, this.namesId[this.highlightedIndex], "0", "0", "0", this.bonusPoints.toString(), this.penaltyPoints.toString()).subscribe(response => {
           if (this.doubleBarrelActive && this.doubleBarrelMoves >= 2) { this.doubleBarrelActive = false; }
+          this.saveUpdatedFleet(true);
         });
       }
       else if (ship_name == 'Бонус +3') {
@@ -823,8 +842,10 @@ export class ShowBattlefieldComponent {
           this.actionMessage = "Bonus: 3!";
         }
         this.changesMessage = "Команда " + this.names[this.highlightedIndex] + " получает 3 бонусных очка!";
-        this.scoreService.save_result(this.gameId, this.namesId[this.highlightedIndex], "0", "0", "0", "3", "0").subscribe(response => {
+        this.bonusPoints += 3;
+        this.scoreService.save_result(this.gameId, this.namesId[this.highlightedIndex], "0", "0", "0", this.bonusPoints.toString(), this.penaltyPoints.toString()).subscribe(response => {
           if (this.doubleBarrelActive && this.doubleBarrelMoves >= 2) { this.doubleBarrelActive = false; }
+          this.saveUpdatedFleet(true);
         });
       }
       else if (ship_name == 'Бонус +1') {
@@ -833,8 +854,10 @@ export class ShowBattlefieldComponent {
           this.actionMessage = "Bonus: 1!";
         }
         this.changesMessage = "Команда " + this.names[this.highlightedIndex] + " получает 1 бонусный балл!";
-        this.scoreService.save_result(this.gameId, this.namesId[this.highlightedIndex], "0", "0", "0", "1", "0").subscribe(response => {
+        this.bonusPoints += 1;
+        this.scoreService.save_result(this.gameId, this.namesId[this.highlightedIndex], "0", "0", "0", this.bonusPoints.toString(), this.penaltyPoints.toString()).subscribe(response => {
           if (this.doubleBarrelActive && this.doubleBarrelMoves >= 2) { this.doubleBarrelActive = false; }
+          this.saveUpdatedFleet(true);
         });
       }
       else if (ship_name == 'Штраф -5') {
@@ -843,17 +866,18 @@ export class ShowBattlefieldComponent {
           this.actionMessage = "Jarima: 5!";
         }
         this.changesMessage = "Команда " + this.names[this.highlightedIndex] + " получает штраф в 5 баллов!";
-        this.scoreService.save_result(this.gameId, this.namesId[this.highlightedIndex], "0", "0", "0", "0", "-5").subscribe(response => {
+        this.penaltyPoints -= 5;
+        this.scoreService.save_result(this.gameId, this.namesId[this.highlightedIndex], "0", "0", "0", this.bonusPoints.toString(), this.penaltyPoints.toString()).subscribe(response => {
           if (this.doubleBarrelActive) {
             if (this.doubleBarrelMoves >= 2) {
               this.doubleBarrelActive = false;
               if (this.doubleBarrelMoveHighlight > 1) {
                 this.moveHighlight(this.doubleBarrelMoveHighlight, false);
-                setTimeout(() => this.commandService.set_command("player_battlefield," + this.gameId + "," + this.highlightedIndex + "," + Math.random(), 1).subscribe(), 3000);
+                this.saveUpdatedFleet(false);
               }
               else {
                 this.moveHighlight(1, false);
-                setTimeout(() => this.commandService.set_command("player_battlefield," + this.gameId + "," + this.highlightedIndex + "," + Math.random(), 1).subscribe(), 3000);
+                this.saveUpdatedFleet(false);
               }
             }
             else {
@@ -862,7 +886,7 @@ export class ShowBattlefieldComponent {
           }
           else {
             this.moveHighlight(1, false);
-            setTimeout(() => this.commandService.set_command("player_battlefield," + this.gameId + "," + this.highlightedIndex + "," + Math.random(), 1).subscribe(), 3000);
+            this.saveUpdatedFleet(false);
           }
         });
       }
@@ -872,19 +896,18 @@ export class ShowBattlefieldComponent {
           this.actionMessage = "Jarima: 3!";
         }
         this.changesMessage = "Команда " + this.names[this.highlightedIndex] + " получает штраф в 3 балла!";
-        console.log(this.namesId);
-        console.log(this.highlightedIndex);
-        this.scoreService.save_result(this.gameId, this.namesId[this.highlightedIndex], "0", "0", "0", "0", "-3").subscribe(response => {
+        this.penaltyPoints -= 3;
+        this.scoreService.save_result(this.gameId, this.namesId[this.highlightedIndex], "0", "0", "0", this.bonusPoints.toString(), this.penaltyPoints.toString()).subscribe(response => {
           if (this.doubleBarrelActive) {
             if (this.doubleBarrelMoves >= 2) {
               this.doubleBarrelActive = false;
               if (this.doubleBarrelMoveHighlight > 1) {
                 this.moveHighlight(this.doubleBarrelMoveHighlight, false);
-                setTimeout(() => this.commandService.set_command("player_battlefield," + this.gameId + "," + this.highlightedIndex + "," + Math.random(), 1).subscribe(), 3000);
+                this.saveUpdatedFleet(false);
               }
               else {
                 this.moveHighlight(1, false);
-                setTimeout(() => this.commandService.set_command("player_battlefield," + this.gameId + "," + this.highlightedIndex + "," + Math.random(), 1).subscribe(), 3000);
+                this.saveUpdatedFleet(false);
               }
             }
             else {
@@ -892,7 +915,7 @@ export class ShowBattlefieldComponent {
             }
           } else {
             this.moveHighlight(1, false);
-            setTimeout(() => this.commandService.set_command("player_battlefield," + this.gameId + "," + this.highlightedIndex + "," + Math.random(), 1).subscribe(), 3000);
+            this.saveUpdatedFleet(false);
           }
         });
       }
@@ -902,17 +925,18 @@ export class ShowBattlefieldComponent {
           this.actionMessage = "Jarima: 1!";
         }
         this.changesMessage = "Команда " + this.names[this.highlightedIndex] + " получает штраф в 1 балл!";
-        this.scoreService.save_result(this.gameId, this.namesId[this.highlightedIndex], "0", "0", "0", "0", "-1").subscribe(response => {
+        this.penaltyPoints -= 1;
+        this.scoreService.save_result(this.gameId, this.namesId[this.highlightedIndex], "0", "0", "0", this.bonusPoints.toString(), this.penaltyPoints.toString()).subscribe(response => {
           if (this.doubleBarrelActive) {
             if (this.doubleBarrelMoves >= 2) {
               this.doubleBarrelActive = false;
               if (this.doubleBarrelMoveHighlight > 1) {
                 this.moveHighlight(this.doubleBarrelMoveHighlight, false);
-                setTimeout(() => this.commandService.set_command("player_battlefield," + this.gameId + "," + this.highlightedIndex + "," + Math.random(), 1).subscribe(), 3000);
+                this.saveUpdatedFleet(false);
               }
               else {
                 this.moveHighlight(1, false);
-                setTimeout(() => this.commandService.set_command("player_battlefield," + this.gameId + "," + this.highlightedIndex + "," + Math.random(), 1).subscribe(), 3000);
+                this.saveUpdatedFleet(false);
               }
             }
             else {
@@ -920,7 +944,7 @@ export class ShowBattlefieldComponent {
             }
           } else {
             this.moveHighlight(1, false);
-            setTimeout(() => this.commandService.set_command("player_battlefield," + this.gameId + "," + this.highlightedIndex + "," + Math.random(), 1).subscribe(), 3000);
+            this.saveUpdatedFleet(false);
           }
         });
       }
@@ -930,6 +954,7 @@ export class ShowBattlefieldComponent {
           this.actionMessage = "Qo'shiq!";
         }
         if (this.doubleBarrelActive && this.doubleBarrelMoves >= 2) { this.doubleBarrelActive = false; }
+        this.saveUpdatedFleet(true);
       }
       else if (ship_name == 'Всем чётным командам по 5 баллов') {
         this.actionMessage = "Всем чётным командам по 5 баллов!";
@@ -973,12 +998,21 @@ export class ShowBattlefieldComponent {
               place++;
             }
             this.changesMessage = "Следующие команды получают по 5 баллов: ";
+            let observables: Observable<any>[] = [];
             this.teams.forEach(team => {
               if (team.place % 2 === 0) {
-                this.scoreService.save_result(this.gameId, team.team_id, "0", "0", "0", "5", "0").subscribe(response => {
-                  this.changesMessage += team.name + "; ";
-                });
+                this.changesMessage += team.name + "; ";
+                if (team.name == this.names[this.highlightedIndex]) {
+                  this.bonusPoints += 5;
+                  observables.push(this.scoreService.save_result(this.gameId, team.team_id, "0", "0", "0", this.bonusPoints.toString(), this.penaltyPoints.toString()));
+                }
+                else {
+                  observables.push(this.scoreService.save_result(this.gameId, team.team_id, "0", "0", "0", "5", "0"));
+                }
               }
+            });
+            forkJoin(observables).subscribe(results => {
+              this.saveUpdatedFleet(true);
             });
           }
         });
@@ -1025,12 +1059,21 @@ export class ShowBattlefieldComponent {
               place++;
             }
             this.changesMessage = "Следующие команды получают по 5 баллов: ";
+            let observables: Observable<any>[] = [];
             this.teams.forEach(team => {
               if (team.place % 2 === 1) {
-                this.scoreService.save_result(this.gameId, team.team_id, "0", "0", "0", "5", "0").subscribe(response => {
-                  this.changesMessage += team.name + "; ";
-                });
+                this.changesMessage += team.name + "; ";
+                if (team.name == this.names[this.highlightedIndex]) {
+                  this.bonusPoints += 5;
+                  observables.push(this.scoreService.save_result(this.gameId, team.team_id, "0", "0", "0", this.bonusPoints.toString(), this.penaltyPoints.toString()));
+                }
+                else {
+                  observables.push(this.scoreService.save_result(this.gameId, team.team_id, "0", "0", "0", "5", "0"));
+                }
               }
+            });
+            forkJoin(observables).subscribe(results => {
+              this.saveUpdatedFleet(true);
             });
           }
         });
@@ -1042,6 +1085,7 @@ export class ShowBattlefieldComponent {
         }
         this.changesMessage = "Разыгрывается 20 баллов";
         if (this.doubleBarrelActive && this.doubleBarrelMoves >= 2) { this.doubleBarrelActive = false; }
+        this.saveUpdatedFleet(true);
       }
       else if (ship_name == 'Эхолот') {
         this.actionMessage = "Эхолот!";
@@ -1050,6 +1094,61 @@ export class ShowBattlefieldComponent {
         }
         this.changesMessage = "Открыты все соседние ячейки вокруг попадания";
         if (this.doubleBarrelActive && this.doubleBarrelMoves >= 2) { this.doubleBarrelActive = false; }
+        this.saveUpdatedFleet(true);
+      }
+      else if (ship_name == 'Налог') {
+        this.actionMessage = "Налог!";
+        if (this.anotherLanguage) {
+          this.actionMessage = "Soliq!";
+        }
+        this.changesMessage = "Команда " + this.names[this.highlightedIndex] + " теряет 10% от своих набранных очков!";
+        if (this.doubleBarrelActive && this.doubleBarrelMoves >= 2) { this.doubleBarrelActive = false; }
+        this.scoreService.get_current_results(this.gameId).subscribe((response: any) => {
+          if (response["message"] == 'No answers') {
+
+          }
+          else {
+            this.teams = response;
+            for (let i = 0; i < this.teams.length; i++) {
+              if (this.teams[i].name == this.names[this.highlightedIndex]) {
+                const totalPoints = this.teams[i].bonus_points + this.teams[i].penalty_points + this.teams[i].question_points + this.teams[i].ship_hit_points + this.teams[i].ship_kill_points;
+                const pointsToDeduct = Math.ceil(totalPoints * 0.1);
+                this.penaltyPoints -= pointsToDeduct;
+                this.scoreService.save_result(this.gameId, this.teams[i].team_id, "0", "0", "0", this.bonusPoints.toString(), this.penaltyPoints.toString()).subscribe(response => {
+                  if (this.doubleBarrelActive) {
+                    if (this.doubleBarrelMoves >= 2) {
+                      this.doubleBarrelActive = false;
+                      if (this.doubleBarrelMoveHighlight > 1) {
+                        this.moveHighlight(this.doubleBarrelMoveHighlight, false);
+                        this.saveUpdatedFleet(false);
+                      }
+                      else {
+                        this.moveHighlight(1, false);
+                        this.saveUpdatedFleet(false);
+                      }
+                    }
+                    else {
+                      this.doubleBarrelMoveHighlight = 1;
+                    }
+                  } else {
+                    this.moveHighlight(1, false);
+                    this.saveUpdatedFleet(false);
+                  }
+                });
+              }
+            }
+          }
+        });
+      }
+      else if (ship_name == 'Джекпот') {
+        this.actionMessage = "Джекпот!";
+        this.changesMessage = "Команда " + this.names[this.highlightedIndex] + " получает " + this.number_of_killed_ships.toString() + " очко(в) бонуса!";
+        if (this.doubleBarrelActive && this.doubleBarrelMoves >= 2) { this.doubleBarrelActive = false; }
+        this.bonusPoints += this.number_of_killed_ships;
+        this.scoreService.save_result(this.gameId, this.namesId[this.highlightedIndex], "0", "0", "0", this.bonusPoints.toString(), this.penaltyPoints.toString()).subscribe(response => {
+          if (this.doubleBarrelActive && this.doubleBarrelMoves >= 2) { this.doubleBarrelActive = false; }
+          this.saveUpdatedFleet(true);
+        });
       }
       else if (ship_name == 'Рокировка') {
         this.actionMessage = "Рокировка!";
@@ -1103,7 +1202,7 @@ export class ShowBattlefieldComponent {
             const selectedIndex = this.teams.findIndex(t => t.name === selectedTeamName);
 
             if (selectedIndex > 0) {
-              var placeChanged = 0;
+              var placeChanged = -1;
               const selectedTeam = this.teams[selectedIndex];
               for (let i = selectedIndex - 1; i >= 0; i--) {
                 if (this.teams[i].place < selectedTeam.place) {
@@ -1112,7 +1211,7 @@ export class ShowBattlefieldComponent {
                 }
               }
 
-              if (placeChanged > 0) {
+              if (placeChanged >= 0) {
 
                 const higherTeam = this.teams[placeChanged];
 
@@ -1133,14 +1232,12 @@ export class ShowBattlefieldComponent {
                     this.changesMessage = `Команда ${selectedTeam.name} поменялась местами с командой: ${tiedTeams[0].name}`;
                   }
                   const swapped = [selectedTeam.name, ...tiedTeams.map(t => t.name)];
-                  console.log(swapped);
                   for (let i = 0; i < swapped.length; i++) {
                     this.swapMessage += swapped[i];
                     if (i < swapped.length - 1) {
                       this.swapMessage += ";";
                     }
                   }
-                  console.log(this.swapMessage);
                   const selectedResult = {
                     ship_hit_points: selectedTeam.ship_hit_points.toString(),
                     ship_kill_points: selectedTeam.ship_kill_points.toString(),
@@ -1167,8 +1264,9 @@ export class ShowBattlefieldComponent {
                     higherResult.penalty_points
                   ).subscribe(() => {
                     // update all tied higher teams with selected result
+                    let observables: Observable<any>[] = [];
                     tiedTeams.forEach(team => {
-                      this.scoreService.update_result(
+                      observables.push(this.scoreService.update_result(
                         this.gameId,
                         team.team_id,
                         selectedResult.ship_hit_points,
@@ -1176,11 +1274,23 @@ export class ShowBattlefieldComponent {
                         selectedResult.question_points,
                         selectedResult.bonus_points,
                         selectedResult.penalty_points
-                      ).subscribe();
+                      ));
+                    });
+                    forkJoin(observables).subscribe(results => {
+                      this.saveUpdatedFleet(true);
                     });
                   });
                 }
+                else {
+                  this.saveUpdatedFleet(true);
+                }
               }
+              else {
+                this.saveUpdatedFleet(true);
+              }
+            }
+            else {
+              this.saveUpdatedFleet(true);
             }
           }
         });
@@ -1207,12 +1317,12 @@ export class ShowBattlefieldComponent {
 
     // Try to find a valid position for the remaining parts
     const directions: ('horizontal' | 'vertical')[] = ['horizontal', 'vertical'];
-    const maxAttempts = 225;
+    const maxAttempts = 289;
 
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       const direction = directions[Math.floor(Math.random() * directions.length)];
-      const startRow = Math.floor(Math.random() * 15);
-      const startCol = Math.floor(Math.random() * 15);
+      const startRow = Math.floor(Math.random() * 17);
+      const startCol = Math.floor(Math.random() * 17);
 
       const newCells: { row: number, col: number }[] = [];
 
@@ -1221,7 +1331,7 @@ export class ShowBattlefieldComponent {
         const row = direction === 'horizontal' ? startRow : startRow + i;
         const col = direction === 'horizontal' ? startCol + i : startCol;
 
-        if (row >= 15 || col >= 15) {
+        if (row >= 17 || col >= 17) {
           valid = false;
           break;
         }
@@ -1238,8 +1348,8 @@ export class ShowBattlefieldComponent {
             const nr = row + dr;
             const nc = col + dc;
             if (
-              nr >= 0 && nr < 15 &&
-              nc >= 0 && nc < 15 &&
+              nr >= 0 && nr < 17 &&
+              nc >= 0 && nc < 17 &&
               this.grid[nr][nc].isShip
             ) {
               valid = false;
@@ -1319,7 +1429,7 @@ export class ShowBattlefieldComponent {
 
     for (const cell of ship.parsedCells) {
       const gridCell = this.grid[cell.row][cell.col];
-      if (ship.name == 'Carrier') {
+      if (ship.name == 'Профурсетка') {
         gridCell.status = 'carrier-sunk';
       }
       else {
@@ -1340,7 +1450,7 @@ export class ShowBattlefieldComponent {
           const r = cell.row + dr;
           const c = cell.col + dc;
           if (
-            r >= 0 && r < 15 && c >= 0 && c < 15 &&
+            r >= 0 && r < 17 && c >= 0 && c < 17 &&
             !this.grid[r][c].isShip &&
             !this.grid[r][c].revealed
           ) {
@@ -1356,6 +1466,14 @@ export class ShowBattlefieldComponent {
 
   finishGame() {
     this.showTable();
+  }
+
+  showAllCells() {
+    this.commandService.set_command("logo," + this.gameId, 1).subscribe((response3: any) => {
+      this.commandService.set_command("battlefieldshowAllCells," + this.gameId, 3).subscribe((response3: any) => {
+        
+      });
+    });
   }
 
 
@@ -1389,7 +1507,7 @@ export class ShowBattlefieldComponent {
     this.fleetService.updateFleetLayout(this.gameId, serializedShips, Array.from(this.revealedWater).join(',')).subscribe(response => {
       this.commandService.set_command("battlefield," + this.gameId + "," + this.highlightedIndex + "," + this.cellMessage + "," + this.actionMessage + "," + this.changesMessage + "," + this.swapMessage + "," + Math.random(), 3).subscribe((response3: any) => {
         if (!isHit) {
-          setTimeout(() => this.commandService.set_command("player_battlefield," + this.gameId + "," + this.highlightedIndex + "," + Math.random(), 1).subscribe(), 3000);
+          setTimeout(() => this.commandService.set_command("player_battlefield," + this.gameId + "," + this.highlightedIndex + "," + Math.random(), 1).subscribe(), 5000);
         }
       });
     });

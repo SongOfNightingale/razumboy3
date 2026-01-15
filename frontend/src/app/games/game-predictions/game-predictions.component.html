@@ -1,0 +1,28 @@
+<div class="position-relative">
+    <app-sidebar-game [isSidebarCollapsed]="isSidebarCollapsed" (sidebarToggle)="onSidebarToggle()">
+    </app-sidebar-game>
+    <button class="sidebar-toggle-btn" [ngClass]="{ 'sidebar-collapsed': isSidebarCollapsed }"
+        (click)="onSidebarToggle()">
+        <i class="fas fa-bars"></i>
+    </button>
+</div>
+
+<div class="table-container mat-elevation-z4">
+    <h2>Предсказания команд</h2>
+    <table class="modern-table">
+        <thead>
+            <tr>
+                <th>Команда</th>
+                <th>Предсказания</th>
+                <th>Мины</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let prediction of predictions">
+                <td>{{ prediction.user_name }}</td>
+                <td>{{ prediction.cell }}</td>
+                <td>{{ prediction.cell_two }}</td>
+            </tr>
+        </tbody>
+    </table>
+</div>

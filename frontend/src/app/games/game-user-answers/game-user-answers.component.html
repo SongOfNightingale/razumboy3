@@ -1,0 +1,53 @@
+<div class="position-relative">
+    <app-sidebar-game [isSidebarCollapsed]="isSidebarCollapsed" (sidebarToggle)="onSidebarToggle()">
+    </app-sidebar-game>
+    <button class="sidebar-toggle-btn" [ngClass]="{ 'sidebar-collapsed': isSidebarCollapsed }"
+        (click)="onSidebarToggle()">
+        <i class="fas fa-bars"></i>
+    </button>
+</div>
+<div class="container">
+    <h2>Game User Answers</h2>
+
+    <div class="team-selector">
+        <label for="teamSelect">Select Team:</label>
+        <select id="teamSelect" [(ngModel)]="selectedTeam" (change)="onTeamSelected()"
+            [disabled]="isLoading || teamList.length === 0">
+            <option value="">-- Choose a team --</option>
+            <option *ngFor="let team of teamList" [value]="team">{{ team }}</option>
+        </select>
+    </div>
+
+    <div *ngIf="errorMessage" class="error-message">
+        {{ errorMessage }}
+    </div>
+
+    <div *ngIf="isLoading" class="loading">
+        Loading answers...
+    </div>
+
+    <div *ngIf="!isLoading && selectedTeam && filteredAnswers.length > 0" class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Question Id</th>
+                    <th>Answer Text</th>
+                    <th>Correct</th>
+                    <th>Points</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let answer of filteredAnswers">
+                    <td>{{ answer.question }}</td>
+                    <td>{{ answer.text | slice:0:20 }}</td>
+                    <td>{{ answer.is_correct ? 'Yes' : 'No' }}</td>
+                    <td>{{ answer.points }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div *ngIf="!isLoading && selectedTeam && filteredAnswers.length === 0" class="no-data">
+        No answers found for the selected team.
+    </div>
+</div>

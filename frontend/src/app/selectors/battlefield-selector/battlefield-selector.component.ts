@@ -70,10 +70,16 @@ interface Team {
 export class BattlefieldSelectorComponent implements OnChanges {
 
   grid: Cell[][] = [];
-  columnLabels = 'ABCDEFGHIKLMNOP'.split('');
+  columnLabels = 'ABCDEFGHIJKLMNOPQ'.split('');
   ships: any[] = [];
   revealedWater: Set<string> = new Set();
   gameId: any; // Replace with actual game ID
+
+  // Add this new property
+  showAllCellsMode: boolean = false;
+  gameplayRevealedCells: Set<string> = new Set();
+  hasRevealedCell: boolean = false;
+  private revealedCellTimer: any = null;
 
   missileSound = new Audio('/assets/missile.wav');
   explosionSound = new Audio('/assets/explosion.wav');
@@ -134,11 +140,14 @@ export class BattlefieldSelectorComponent implements OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     this.screenCommand = changes['screenCommand'].currentValue;
     var splitted = this.screenCommand.split(",");
-    console.log(splitted);
+
     if (splitted[1]) {
       this.gameId = splitted[1];
       localStorage.setItem('gameId', splitted[1]);
     }
+
+    this.showAllCellsMode = splitted[0]?.includes('showAllCells') || false;
+
     if (splitted[2]) {
       this.highlightedIndex = parseInt(splitted[2]);
     }
@@ -158,7 +167,6 @@ export class BattlefieldSelectorComponent implements OnChanges {
     else {
       this.swapMessage = '';
     }
-    console.log(this.swapMessage);
 
     // show popup if any of the messages is not empty
     const anyMessage = Boolean(this.cellMessage || this.actionMessage || this.changesMessage);
@@ -275,9 +283,9 @@ export class BattlefieldSelectorComponent implements OnChanges {
 
   initGrid() {
     this.grid = [];
-    for (let row = 0; row < 15; row++) {
+    for (let row = 0; row < 17; row++) {
       const rowCells: Cell[] = [];
-      for (let col = 0; col < 15; col++) {
+      for (let col = 0; col < 17; col++) {
         rowCells.push({
           row,
           col,
@@ -315,6 +323,7 @@ export class BattlefieldSelectorComponent implements OnChanges {
 
       this.placeShipsOnGrid();
       this.applyRevealedWater();
+      this.activateDimming();
     });
   }
 
@@ -345,11 +354,32 @@ export class BattlefieldSelectorComponent implements OnChanges {
           this.lastRevealedCell = { row: cell.row, col: cell.col };
         }
 
+        // Track gameplay-revealed cells in showAllCells mode
+        if (this.showAllCellsMode && cell.revealed) {
+          const coord = this.cellToCoord(cell.row, cell.col);
+          this.gameplayRevealedCells.add(coord);
+        }
+
         if (ship.type === 'additional') {
           gridCell.icon = ship.icon || 'fa-bolt';
         }
       }
     }
+  }
+
+  activateDimming() {
+    this.hasRevealedCell = true;
+
+    // Clear any existing timer
+    if (this.revealedCellTimer) {
+      clearTimeout(this.revealedCellTimer);
+    }
+
+    // Remove dimming after 5 seconds
+    this.revealedCellTimer = setTimeout(() => {
+      this.hasRevealedCell = false;
+      this.revealedCellTimer = null;
+    }, 5000);
   }
 
   applyRevealedWater() {
@@ -361,6 +391,11 @@ export class BattlefieldSelectorComponent implements OnChanges {
       if (cell && !cell.isShip) {
         cell.revealed = true;
         cell.status = 'revealed-water';
+
+        // Track in showAllCells mode
+        if (this.showAllCellsMode) {
+          this.gameplayRevealedCells.add(coord);
+        }
       }
       if (waterRevealed) {
         this.lastRevealedCell = { row: row, col: col };
@@ -370,7 +405,7 @@ export class BattlefieldSelectorComponent implements OnChanges {
       const col = this.columnLabels.indexOf(coord[0]);
       const row = parseInt(coord.slice(1)) - 1;
       const cell = this.grid[row]?.[col];
-      if(this.lastRevealedCell?.row === row && this.lastRevealedCell?.col === col) {
+      if (this.lastRevealedCell?.row === row && this.lastRevealedCell?.col === col) {
         cell.justRevealed = true;
       }
     });

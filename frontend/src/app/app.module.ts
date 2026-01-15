@@ -56,6 +56,8 @@ import { GameFooterComponent } from './utilities/game-footer/game-footer.compone
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { PlayerBattlefieldSelectorComponent } from './selectors/player-battlefield-selector/player-battlefield-selector.component';
 import { PredictionSelectorComponent } from './selectors/prediction-selector/prediction-selector.component';
+import { GamePredictionsComponent } from './games/game-predictions/game-predictions.component';
+import { GameUserAnswersComponent } from './games/game-user-answers/game-user-answers.component';
 
 @NgModule({
   declarations: [
@@ -103,6 +105,8 @@ import { PredictionSelectorComponent } from './selectors/prediction-selector/pre
     GameFooterComponent,
     PlayerBattlefieldSelectorComponent,
     PredictionSelectorComponent,
+    GamePredictionsComponent,
+    GameUserAnswersComponent,
   ],
   imports: [
     BrowserModule,

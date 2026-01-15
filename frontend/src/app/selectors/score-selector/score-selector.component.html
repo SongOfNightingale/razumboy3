@@ -2,7 +2,7 @@
     <table mat-table [dataSource]="dataSource" class="mat-table modern-table">
         <ng-container matColumnDef="place">
             <th class="header" mat-header-cell *matHeaderCellDef> Место </th>
-            <td class="table-row" mat-cell *matCellDef="let team"> {{ team.place }} </td>
+            <td class="table-row" mat-cell *matCellDef="let team"> {{ team.place }} <i class="fa-solid fa-crown" style="color: #efbf04;" *ngIf="team.is_special"></i></td>
         </ng-container>
 
         <ng-container matColumnDef="name">

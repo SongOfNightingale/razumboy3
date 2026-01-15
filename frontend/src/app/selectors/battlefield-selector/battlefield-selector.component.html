@@ -1,7 +1,7 @@
 <div class="main-container">
     <!-- Left side: Battlefield (50%) -->
     <div class="battlefield">
-        <div class="grid">
+        <div class="grid" [class.has-revealed-cell]="hasRevealedCell" [class.show-all-cells-mode]="showAllCellsMode">
             <div class="row">
                 <div class="cell label"></div>
                 <div class="cell letters" *ngFor="let col of columnLabels">{{ col }}</div>
@@ -9,13 +9,14 @@
             <div class="row" *ngFor="let row of grid; let r = index">
                 <div class="cell label">{{ r + 1 }}</div>
                 <div class="cell" *ngFor="let cell of row"
-                    [ngClass]="(cell.status === 'revealed-ship' && cell.type != 'additional') || cell.status === 'revealed-carrier' ? 'on-fire ' : cell.status"
+                    [ngClass]="(cell.status === 'revealed-ship' && cell.type != 'additional') || cell.status === 'revealed-carrier' ? 'on-fire ' : (showAllCellsMode && cell.isShip) ? 'revealed-ship' : cell.status"
                     [class.just-revealed]="cell.justRevealed"
-                    [class.revealed-carrier]="cell.status === 'revealed-carrier'">
-                    <i *ngIf="cell.status === 'revealed-ship' && cell.type != 'additional'"
+                    [class.revealed-carrier]="cell.status === 'revealed-carrier'"
+                    [class.dimmed-during-gameplay]="showAllCellsMode && gameplayRevealedCells.has(cellToCoord(cell.row, cell.col))">
+                    <i *ngIf="(cell.status === 'revealed-ship' && cell.type != 'additional') || (showAllCellsMode && cell.isShip && cell.type != 'additional')"
                         class="fa-solid fa-ship"></i>
-                    <img *ngIf="cell.status === 'revealed-ship' && cell.icon" [src]="cell.icon" [ngClass]="cell.icon"
-                        width="24" height="24" />
+                    <img *ngIf="(cell.status === 'revealed-ship' || (showAllCellsMode && cell.isShip)) && cell.icon"
+                        [src]="cell.icon" [ngClass]="cell.icon" width="24" height="24" />
                     <ng-container *ngIf="cell.status === 'hit-sunk'">
                         <i class="fa-solid fa-ship ship-silhouette" aria-hidden="true"></i>
                         <i class="fa-solid fa-skull-crossbones sunk-mark" aria-hidden="true"></i>
@@ -55,7 +56,7 @@
         </div>
 
         <!-- Bottom: Table container (33%) -->
-        <div class="table-container-wrapper">
+        <!-- <div class="table-container-wrapper">
             <table mat-table [dataSource]="dataSource" class="mat-table modern-table">
                 <ng-container matColumnDef="place">
                     <th class="header" mat-header-cell *matHeaderCellDef> {{placeMessage}} </th>
@@ -101,6 +102,6 @@
                 <tr mat-row *matRowDef="let row; columns: displayedColumns;"
                     [ngStyle]="isInSwap(row) ? {'outline': '2px solid red'} : null"></tr>
             </table>
-        </div>
+        </div> -->
     </div>
 </div>

@@ -26,6 +26,8 @@ import { ChooseDrawComponent } from './games/choose-draw/choose-draw.component';
 import { GameDrawAnswersComponent } from './games/game-draw-answers/game-draw-answers.component';
 import { ShowBattlefieldComponent } from './games/show-battlefield/show-battlefield.component';
 import { GameAnswersComponent } from './games/game-answers/game-answers.component';
+import { GamePredictionsComponent } from './games/game-predictions/game-predictions.component';
+import { GameUserAnswersComponent } from './games/game-user-answers/game-user-answers.component';
 
 const routes: Routes = [
   { path: '', component: LoginComponent },
@@ -57,6 +59,8 @@ const routes: Routes = [
   { path: 'choose-draw', component: ChooseDrawComponent },
   { path: 'game-draw-answers', component: GameDrawAnswersComponent },
   { path: 'game-answers', component: GameAnswersComponent },
+  { path: 'game-predictions', component: GamePredictionsComponent },
+  { path: 'game-user-answers', component: GameUserAnswersComponent },
 
   { path: 'show-battlefield', component: ShowBattlefieldComponent },
 ];

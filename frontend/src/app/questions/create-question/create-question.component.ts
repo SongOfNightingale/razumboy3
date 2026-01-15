@@ -72,12 +72,10 @@ export class CreateQuestionComponent {
 
   handleAudioChange(event: any, index: number): void {
     // Handle logo change, if needed
-    console.log(event.target.files[0]);
     this.selectedAudio[index] = event.target.files[0];
     if (this.selectedAudio[index]) {
       this.fileUploadService.uploadFile(this.selectedAudio[index]).subscribe((response: any) => {
         this.audio_link[index] = response.file_link;
-        console.log(this.audio_link);
       });
     }
   }

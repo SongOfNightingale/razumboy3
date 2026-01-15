@@ -27,6 +27,29 @@ export class ScoreService {
     return this.httpClient.put(create_url, {}, { params: parameters });
   }
 
+  save_bonus(game_id = "", user_id = "", bonus_points = "") {
+    const create_url = environment.backend + "save_bonus";
+    let parameters = new HttpParams().set('game_id', game_id);
+    parameters = parameters.append('user_id', user_id);
+    parameters = parameters.append('bonus_points', bonus_points);
+    return this.httpClient.put(create_url, {}, { params: parameters });
+  }
+
+  save_penalty(game_id = "", user_id = "", penalty_points = "") {
+    const create_url = environment.backend + "save_penalty";
+    let parameters = new HttpParams().set('game_id', game_id);
+    parameters = parameters.append('user_id', user_id);
+    parameters = parameters.append('penalty_points', penalty_points);
+    return this.httpClient.put(create_url, {}, { params: parameters });
+  }
+
+  set_special(game_id = "", user_id = "") {
+    const create_url = environment.backend + "set_special";
+    let parameters = new HttpParams().set('game_id', game_id);
+    parameters = parameters.append('user_id', user_id);
+    return this.httpClient.put(create_url, {}, { params: parameters });
+  }
+
   save_initial_result(game_id = "") {
     const create_url = environment.backend + "save_initial_result";
     return this.httpClient.post(create_url, { game_id });

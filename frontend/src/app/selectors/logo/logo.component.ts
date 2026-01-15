@@ -12,7 +12,7 @@ export class LogoComponent {
   isPlayer: boolean = false;
   teamName: string = '';
 
-  imagePath = "/assets/123.png";
+  //imagePath = "/assets/123.png";
 
   constructor() {
     var role = localStorage.getItem('role');
@@ -23,7 +23,7 @@ export class LogoComponent {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    this.imagePath = "/assets/123.png";
+    //this.imagePath = "/assets/123.png";
     this.screenCommand = changes['screenCommand'].currentValue;
     var splitted = this.screenCommand.split(",");
     if (splitted[1]) {
@@ -31,7 +31,7 @@ export class LogoComponent {
     }
     if (splitted[2]) {
       if (splitted[2] != "-") {
-        this.imagePath = splitted[2];
+        //this.imagePath = splitted[2];
       }
     }
   }
