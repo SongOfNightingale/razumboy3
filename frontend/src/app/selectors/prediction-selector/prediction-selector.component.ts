@@ -22,7 +22,7 @@ interface Cell {
 export class PredictionSelectorComponent {
   @Input() screenCommand: string = 'empty';
 
-  columnLabels = 'ABCDEFGHIJKLMNOPQ'.split('');
+  columnLabels: string[] = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
   grid: Cell[][] = [];
   savedCell!: Cell;
   gameId: string = '';
@@ -34,6 +34,9 @@ export class PredictionSelectorComponent {
   title: string = '';
   variant: number = 0;
 
+  columnNumber: number = 17;
+  rowNumber: number = 17;
+
   answerMessage: string = 'Ваш вариант принят';
 
   constructor(private settingsService: SettingsService) {
@@ -41,7 +44,11 @@ export class PredictionSelectorComponent {
       if (response[0].language == 'uz') {
         this.answerMessage = 'Sizning javobingiz qabul qilindi';
       }
-
+      this.columnNumber = parseInt(response[0].fieldColumns);
+      this.rowNumber = parseInt(response[0].fieldRows);
+      for (let i = 0; i < 26 - this.columnNumber; i++) {
+        this.columnLabels.pop();
+      }
       this.userId = localStorage.getItem('userId');
       this.showBattlefield();
     });
@@ -67,10 +74,10 @@ export class PredictionSelectorComponent {
       for (let i = 0; i < response.length; i++) {
         if (this.userId == response[i].user_id) {
           if (this.variant == 1 && response[i].cell) {
-              this.answerSent = true;
+            this.answerSent = true;
           }
           else if (this.variant == 2 && response[i].cell_two) {
-              this.answerSent = true;
+            this.answerSent = true;
           }
         }
       }
@@ -83,9 +90,9 @@ export class PredictionSelectorComponent {
 
   initGrid() {
     this.grid = [];
-    for (let row = 0; row < 17; row++) {
+    for (let row = 0; row < this.rowNumber; row++) {
       const rowCells: Cell[] = [];
-      for (let col = 0; col < 17; col++) {
+      for (let col = 0; col < this.columnNumber; col++) {
         rowCells.push({
           row,
           col,

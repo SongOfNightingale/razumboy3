@@ -2,6 +2,7 @@ import { Component, Input, SimpleChanges } from '@angular/core';
 import { BattlefieldService } from '../../services/battlefield.service';
 import { UserService } from '../../services/user.service';
 import { CommandService } from '../../services/command.service';
+import { SettingsService } from '../../services/settings.service';
 
 interface Cell {
   row: number;
@@ -24,7 +25,7 @@ interface Cell {
 })
 export class PlayerBattlefieldSelectorComponent {
 
-  columnLabels = 'ABCDEFGHIJKLMNOPQ'.split('');
+  columnLabels: string[] = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
   grid: Cell[][] = [];
   ships: any[] = [];
   revealedWater: Set<string> = new Set();
@@ -41,14 +42,24 @@ export class PlayerBattlefieldSelectorComponent {
   clickedRow: any = '0';
   clickedCol: any = '0';
 
+  columnNumber: number = 17;
+  rowNumber: number = 17;
+
   //clicked = false;
 
   @Input() screenCommand: string = 'empty';
 
   lastRevealedCell: { row: number; col: number } | null = null;
 
-  constructor(private fleetService: BattlefieldService, private userService: UserService, private commandService: CommandService) {
+  constructor(private fleetService: BattlefieldService, private userService: UserService, private commandService: CommandService, private settingsService: SettingsService) {
     this.userId = localStorage.getItem('userId');
+    this.settingsService.get_numbers().subscribe((data: any) => {
+      this.columnNumber = parseInt(data[0].fieldColumns);
+      this.rowNumber = parseInt(data[0].fieldRows);
+      for (let i = 0; i < 26 - this.columnNumber; i++) {
+        this.columnLabels.pop();
+      }
+    });
     //this.showBattlefield();
   }
 
@@ -88,9 +99,9 @@ export class PlayerBattlefieldSelectorComponent {
 
   initGrid() {
     this.grid = [];
-    for (let row = 0; row < 17; row++) {
+    for (let row = 0; row < this.rowNumber; row++) {
       const rowCells: Cell[] = [];
-      for (let col = 0; col < 17; col++) {
+      for (let col = 0; col < this.columnNumber; col++) {
         rowCells.push({
           row,
           col,

@@ -70,7 +70,7 @@ interface Team {
 export class BattlefieldSelectorComponent implements OnChanges {
 
   grid: Cell[][] = [];
-  columnLabels = 'ABCDEFGHIJKLMNOPQ'.split('');
+  columnLabels: string[] = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
   ships: any[] = [];
   revealedWater: Set<string> = new Set();
   gameId: any; // Replace with actual game ID
@@ -120,6 +120,9 @@ export class BattlefieldSelectorComponent implements OnChanges {
   lastRevealedCell: { row: number; col: number } | null = null;
   namesLoaded: boolean = false;
 
+  columnNumber: number = 17;
+  rowNumber: number = 17;
+
   constructor(private fleetService: BattlefieldService, private userService: UserService, private scoreService: ScoreService, private settingsService: SettingsService) {
     this.settingsService.get_numbers().subscribe((response: any) => {
       if (response[0].language == 'uz') {
@@ -131,6 +134,11 @@ export class BattlefieldSelectorComponent implements OnChanges {
         this.bonusMessage = 'Bonus';
         this.penaltyMessage = 'Jarimalar';
         this.totalMessage = 'Jami';
+      }
+      this.columnNumber = parseInt(response[0].fieldColumns);
+      this.rowNumber = parseInt(response[0].fieldRows);
+      for (let i = 0; i < 26 - this.columnNumber; i++) {
+        this.columnLabels.pop();
       }
       //this.showBattlefield();
       //this.showTable();
@@ -155,6 +163,9 @@ export class BattlefieldSelectorComponent implements OnChanges {
       this.cellMessage = splitted[3];
       this.actionMessage = splitted[4];
       this.changesMessage = splitted[5];
+      this.cellMessage = this.cellMessage.replace('&', ',');
+      this.actionMessage = this.actionMessage.replace('&', ',');
+      this.changesMessage = this.changesMessage.replace('&', ',');
     }
     else {
       this.cellMessage = '';
@@ -163,6 +174,7 @@ export class BattlefieldSelectorComponent implements OnChanges {
     }
     if (splitted[6]) {
       this.swapMessage = splitted[6];
+      this.swapMessage = this.swapMessage.replace('&', ',');
     }
     else {
       this.swapMessage = '';
@@ -283,9 +295,9 @@ export class BattlefieldSelectorComponent implements OnChanges {
 
   initGrid() {
     this.grid = [];
-    for (let row = 0; row < 17; row++) {
+    for (let row = 0; row < this.rowNumber; row++) {
       const rowCells: Cell[] = [];
-      for (let col = 0; col < 17; col++) {
+      for (let col = 0; col < this.columnNumber; col++) {
         rowCells.push({
           row,
           col,

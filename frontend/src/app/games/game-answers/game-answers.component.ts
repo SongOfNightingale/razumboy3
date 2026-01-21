@@ -41,6 +41,7 @@ export class GameAnswersComponent {
   isSpecial = false;
   isDisabled = true;
   jackpotNumber = 0;
+  songNumber = 0;
 
   isSidebarCollapsed = false;
 
@@ -58,18 +59,19 @@ export class GameAnswersComponent {
       }
       this.questionNumber = localStorage.getItem("questionNumber");
       this.question_points = localStorage.getItem("questionPoints");
-      if (this.question_points == 3) {
-        this.pointCorrect = '3';
-      }
-      else if (this.question_points == 5) {
-        this.pointCorrect = '5';
-        this.pointIncorrect = '-5';
-      }
-      else if (this.question_points == -1) {
-        this.isSpecial = true;
-      }
       this.settingsService.get_numbers().subscribe((response4: any) => {
-        this.jackpotNumber = response4[0].o_number;
+        this.jackpotNumber = parseInt(response4[0].pointsSpecialTour);
+        this.songNumber = response4[0].pointsSong;
+        if (this.question_points == 3) {
+          this.pointCorrect = '3';
+        }
+        else if (this.question_points == 5) {
+          this.pointCorrect = this.songNumber.toString();
+          this.pointIncorrect = '-' + this.songNumber.toString();
+        }
+        else if (this.question_points == -1) {
+          this.isSpecial = true;
+        }
         // if (response4[0].special == this.questionNumber) {
         //   this.isDisabled = false;
         //   this.isSpecial = true;

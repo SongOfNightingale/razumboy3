@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { BattlefieldService } from '../../services/battlefield.service';
+import { SettingsService } from '../../services/settings.service';
 
 interface Cell {
   row: number;
@@ -27,8 +28,37 @@ interface Ship {
 export class CreateBattlefieldComponent {
 
   grid: Cell[][] = [];
-  columnLabels: string[] = 'ABCDEFGHIJKLMNOPQ'.split('');
-  rowLabels: number[] = Array.from({ length: 17 }, (_, i) => i + 1);
+  columnLabels: string[] = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+  rowLabels: number[] = [];
+
+  columnNumber: number = 17;
+  rowNumber: number = 17;
+  ships6: number = 1;
+  ships5: number = 2;
+  ships4: number = 3;
+  ships3: number = 4;
+  ships2: number = 5;
+  ships1: number = 6;
+  shipSurprise: number = 1;
+  shipDoubleBarrel: number = 1;
+  shipReverse: number = 1;
+  shipMove5: number = 1;
+  shipMove3: number = 1;
+  shipKaraoke: number = 1;
+  shipCastling: number = 1;
+  shipBonus5: number = 1;
+  shipBonus3: number = 1;
+  shipBonus1: number = 1;
+  shipPenalty5: number = 1;
+  shipPenalty3: number = 1;
+  shipPenalty1: number = 1;
+  shipSong: number = 1;
+  shipSonar: number = 1;
+  shipEvenBonus: number = 1;
+  shipOddBonus: number = 1;
+  shipSpecialTour: number = 1;
+  shipJackpot: number = 1;
+  shipTax: number = 1;
 
   ships: Ship[] = [];
   selectedShip: Ship | null = null;
@@ -42,13 +72,47 @@ export class CreateBattlefieldComponent {
     this.isSidebarCollapsed = !this.isSidebarCollapsed;
   }
 
-  constructor(private battlefieldService: BattlefieldService) {
-    this.initGrid();
-    this.initShips();
+  constructor(private battlefieldService: BattlefieldService, private settingsService: SettingsService) {
+    this.settingsService.get_numbers().subscribe((data: any) => {
+      this.columnNumber = parseInt(data[0].fieldColumns);
+      this.rowNumber = parseInt(data[0].fieldRows);
+      this.ships6 = parseInt(data[0].ships6);
+      this.ships5 = parseInt(data[0].ships5);
+      this.ships4 = parseInt(data[0].ships4);
+      this.ships3 = parseInt(data[0].ships3);
+      this.ships2 = parseInt(data[0].ships2);
+      this.ships1 = parseInt(data[0].ships1);
+      this.shipSurprise = parseInt(data[0].shipSurprise);
+      this.shipDoubleBarrel = parseInt(data[0].shipDoubleBarrel);
+      this.shipReverse = parseInt(data[0].shipReverse);
+      this.shipMove5 = parseInt(data[0].shipMove5);
+      this.shipMove3 = parseInt(data[0].shipMove3);
+      this.shipKaraoke = parseInt(data[0].shipKaraoke);
+      this.shipCastling = parseInt(data[0].shipCastling);
+      this.shipBonus5 = parseInt(data[0].shipBonus5);
+      this.shipBonus3 = parseInt(data[0].shipBonus3);
+      this.shipBonus1 = parseInt(data[0].shipBonus1);
+      this.shipPenalty5 = parseInt(data[0].shipPenalty5);
+      this.shipPenalty3 = parseInt(data[0].shipPenalty3);
+      this.shipPenalty1 = parseInt(data[0].shipPenalty1);
+      this.shipSong = parseInt(data[0].shipSong);
+      this.shipSonar = parseInt(data[0].shipSonar);
+      this.shipEvenBonus = parseInt(data[0].shipEvenBonus);
+      this.shipOddBonus = parseInt(data[0].shipOddBonus);
+      this.shipSpecialTour = parseInt(data[0].shipSpecialTour);
+      this.shipJackpot = parseInt(data[0].shipJackpot);
+      this.shipTax = parseInt(data[0].shipTax);
+      this.rowLabels = Array.from({ length: this.rowNumber }, (_, i) => i + 1);
+      for (let i = 0; i < 26 - this.columnNumber; i++) {
+        this.columnLabels.pop();
+      }
+      this.initGrid();
+      this.initShips();
 
-    this.gameId = localStorage.getItem("gameId");
+      this.gameId = localStorage.getItem("gameId");
 
-    this.loadShipsFromBackend(this.gameId);
+      this.loadShipsFromBackend(this.gameId);
+    });
   }
 
   loadShipsFromBackend(gameId: any) {
@@ -102,8 +166,8 @@ export class CreateBattlefieldComponent {
   }
 
   initGrid() {
-    this.grid = Array.from({ length: 17 }, (_, row) =>
-      Array.from({ length: 17 }, (_, col) => ({
+    this.grid = Array.from({ length: this.rowNumber }, (_, row) =>
+      Array.from({ length: this.columnNumber }, (_, col) => ({
         row,
         col,
       }))
@@ -111,21 +175,41 @@ export class CreateBattlefieldComponent {
   }
 
   initShips() {
-    const fleet = [
-      { count: 1, size: 6, name: 'Профурсетка' },
-      { count: 2, size: 5, name: 'Бешбармак' },
-      { count: 3, size: 4, name: 'Свингер' },
-      { count: 4, size: 3, name: 'Сэндвич' },
-      { count: 5, size: 2, name: 'Твикс' },
-      { count: 6, size: 1, name: 'Чёрная дыра' }
+    const fleetCounts = [
+      { count: this.ships6, size: 6 },
+      { count: this.ships5, size: 5 },
+      { count: this.ships4, size: 4 },
+      { count: this.ships3, size: 3 },
+      { count: this.ships2, size: 2 },
+      { count: this.ships1, size: 1 }
     ];
 
+    const shipNames = [
+      'Профурсетка',
+      'Бешбармак',
+      'Свингер',
+      'Сэндвич',
+      'Твикс',
+      'Чёрная дыра'
+    ];
+
+    // Find the largest ship size that exists
+    let largestShipIndex = -1;
+    for (let i = 0; i < fleetCounts.length; i++) {
+      if (fleetCounts[i].count > 0) {
+        largestShipIndex = i;
+        break;
+      }
+    }
+
     let id = 1;
-    fleet.forEach(type => {
+    fleetCounts.forEach((type, index) => {
       for (let i = 0; i < type.count; i++) {
+        // Use "Профурсетка" for the largest ship, then proceed with other names
+        const shipName = index === largestShipIndex ? 'Профурсетка' : shipNames[index];
         this.ships.push({
           id: `ship-${id++}`,
-          name: type.name,
+          name: shipName,
           size: type.size,
           direction: 'horizontal',
           placed: false
@@ -133,41 +217,41 @@ export class CreateBattlefieldComponent {
       }
     });
 
-    const additionalShipData = [
-      { name: 'Сюрприз', icon: 'assets/Сюрприз.png' },
-      { name: 'Двустволка', icon: 'assets/двустволка.png' },
-      { name: 'Реверс', icon: 'assets/реверс.png' },
-      { name: 'Реверс', icon: 'assets/реверс.png' },
-      { name: 'Переход +5', icon: 'assets/5.png' },
-      { name: 'Переход +3', icon: 'assets/3.png' },
-      { name: 'Караоке', icon: 'assets/Микрофон.png' },
-      { name: 'Караоке', icon: 'assets/Микрофон.png' },
-      { name: 'Рокировка', icon: 'assets/2.png' },
-      { name: 'Рокировка', icon: 'assets/2.png' },
-      { name: 'Бонус +5', icon: 'assets/бонус +5.png' },
-      { name: 'Бонус +3', icon: 'assets/+3.png' },
-      { name: 'Бонус +1', icon: 'assets/+1.png' },
-      { name: 'Штраф -5', icon: 'assets/минус.png' },
-      { name: 'Штраф -3', icon: 'assets/минус 3.png' },
-      { name: 'Штраф -1', icon: 'assets/минус 1.png' },
-      { name: 'Песня', icon: 'assets/Песня.png' },
-      { name: 'Эхолот', icon: 'assets/ЭХО.png' },
-      { name: 'Всем чётным командам по 5 баллов', icon: 'assets/четные.png' },
-      { name: 'Всем нечётным командам по 5 баллов', icon: 'assets/нечетные.png' },
-      { name: 'Особый тур', icon: 'assets/особый.png' },
-      { name: 'Джекпот', icon: 'assets/slot-machine.png' },
-      { name: 'Налог', icon: 'assets/tax.png' }
+    const additionalShipConfigs = [
+      { name: 'Сюрприз', icon: 'assets/Сюрприз.png', count: this.shipSurprise },
+      { name: 'Двустволка', icon: 'assets/двустволка.png', count: this.shipDoubleBarrel },
+      { name: 'Реверс', icon: 'assets/реверс.png', count: this.shipReverse },
+      { name: 'Переход +5', icon: 'assets/5.png', count: this.shipMove5 },
+      { name: 'Переход +3', icon: 'assets/3.png', count: this.shipMove3 },
+      { name: 'Караоке', icon: 'assets/Микрофон.png', count: this.shipKaraoke },
+      { name: 'Рокировка', icon: 'assets/2.png', count: this.shipCastling },
+      { name: 'Бонус +5', icon: 'assets/бонус +5.png', count: this.shipBonus5 },
+      { name: 'Бонус +3', icon: 'assets/+3.png', count: this.shipBonus3 },
+      { name: 'Бонус +1', icon: 'assets/+1.png', count: this.shipBonus1 },
+      { name: 'Штраф -5', icon: 'assets/минус.png', count: this.shipPenalty5 },
+      { name: 'Штраф -3', icon: 'assets/минус 3.png', count: this.shipPenalty3 },
+      { name: 'Штраф -1', icon: 'assets/минус 1.png', count: this.shipPenalty1 },
+      { name: 'Песня', icon: 'assets/Песня.png', count: this.shipSong },
+      { name: 'Эхолот', icon: 'assets/ЭХО.png', count: this.shipSonar },
+      { name: 'Всем чётным командам по 5 баллов', icon: 'assets/четные.png', count: this.shipEvenBonus },
+      { name: 'Всем нечётным командам по 5 баллов', icon: 'assets/нечетные.png', count: this.shipOddBonus },
+      { name: 'Особый тур', icon: 'assets/особый.png', count: this.shipSpecialTour },
+      { name: 'Джекпот', icon: 'assets/slot-machine.png', count: this.shipJackpot },
+      { name: 'Налог', icon: 'assets/tax.png', count: this.shipTax }
     ];
 
-    additionalShipData.forEach((data, index) => {
-      this.ships.push({
-        id: `additional-${index + 1}`,
-        name: data.name,
-        size: 1,
-        direction: 'horizontal',
-        placed: false,
-        icon: data.icon
-      });
+    let additionalId = 1;
+    additionalShipConfigs.forEach((config) => {
+      for (let i = 0; i < config.count; i++) {
+        this.ships.push({
+          id: `additional-${additionalId++}`,
+          name: config.name,
+          size: 1,
+          direction: 'horizontal',
+          placed: false,
+          icon: config.icon
+        });
+      }
     });
   }
 
@@ -194,7 +278,7 @@ export class CreateBattlefieldComponent {
       const r = ship.direction === 'horizontal' ? row : row + i;
       const c = ship.direction === 'horizontal' ? col + i : col;
 
-      if (r >= 17 || c >= 17) return false;
+      if (r >= this.rowNumber || c >= this.columnNumber) return false;
 
       const cell = this.grid[r][c];
       if (cell.occupiedBy) return false;
@@ -204,7 +288,7 @@ export class CreateBattlefieldComponent {
         for (let dx = -1; dx <= 1; dx++) {
           for (let dy = -1; dy <= 1; dy++) {
             const nr = r + dx, nc = c + dy;
-            if (nr >= 0 && nr < 17 && nc >= 0 && nc < 17) {
+            if (nr >= 0 && nr < this.rowNumber && nc >= 0 && nc < this.columnNumber) {
               const neighbor = this.grid[nr][nc];
               if (neighbor.occupiedBy) return false;
             }
@@ -270,8 +354,8 @@ export class CreateBattlefieldComponent {
     this.ships.forEach(ship => {
       for (let attempts = 0; attempts < 1000; attempts++) {
         ship.direction = Math.random() > 0.5 ? 'horizontal' : 'vertical';
-        const r = Math.floor(Math.random() * 17);
-        const c = Math.floor(Math.random() * 17);
+        const r = Math.floor(Math.random() * this.rowNumber);
+        const c = Math.floor(Math.random() * this.columnNumber);
         if (this.canPlaceShip(r, c, ship)) {
           this.placeShip(r, c, ship);
           break;
