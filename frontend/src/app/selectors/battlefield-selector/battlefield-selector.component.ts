@@ -135,11 +135,6 @@ export class BattlefieldSelectorComponent implements OnChanges {
         this.penaltyMessage = 'Jarimalar';
         this.totalMessage = 'Jami';
       }
-      this.columnNumber = parseInt(response[0].fieldColumns);
-      this.rowNumber = parseInt(response[0].fieldRows);
-      for (let i = 0; i < 26 - this.columnNumber; i++) {
-        this.columnLabels.pop();
-      }
       //this.showBattlefield();
       //this.showTable();
     });
@@ -191,9 +186,16 @@ export class BattlefieldSelectorComponent implements OnChanges {
     // if (anyMessage) {
     //   this.popupTimer = setTimeout(() => { this.showPopup = false; this.popupTimer = null; }, 4000);
     // }
-
-    this.showBattlefield();
-    this.showTable();
+    this.settingsService.get_numbers().subscribe((response: any) => {
+      this.columnLabels = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+      this.columnNumber = parseInt(response[0].fieldColumns);
+      this.rowNumber = parseInt(response[0].fieldRows);
+      for (let i = 0; i < 26 - this.columnNumber; i++) {
+        this.columnLabels.pop();
+      }
+      this.showBattlefield();
+      this.showTable();
+    });
   }
 
   showTable() {

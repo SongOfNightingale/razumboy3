@@ -183,7 +183,7 @@
         </fieldset>
 
         <button type="submit" [disabled]="isLoading" class="save-button">
-            {{ isLoading ? 'Сохранение...' : 'Сохранить' }}
+            {{ isLoading ? 'Сохранение...' : 'Сохранить' }} (Количество игровых ячеек: {{ ships6*6 + ships5*5 + ships4*4 + ships3*3 + ships2*2 + ships1 + shipSurprise + shipDoubleBarrel + shipReverse + shipMove5 + shipMove3 + shipKaraoke + shipCastling + shipBonus5 + shipBonus3 + shipBonus1 + shipSong + shipSonar + shipEvenBonus + shipOddBonus + shipSpecialTour + shipJackpot }})
         </button>
     </form>
 </div>

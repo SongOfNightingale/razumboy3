@@ -103,6 +103,7 @@ export class CreateBattlefieldComponent {
       this.shipJackpot = parseInt(data[0].shipJackpot);
       this.shipTax = parseInt(data[0].shipTax);
       this.rowLabels = Array.from({ length: this.rowNumber }, (_, i) => i + 1);
+      this.columnLabels = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
       for (let i = 0; i < 26 - this.columnNumber; i++) {
         this.columnLabels.pop();
       }

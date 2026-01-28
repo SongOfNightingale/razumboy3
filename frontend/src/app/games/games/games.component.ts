@@ -177,7 +177,6 @@ export class GamesComponent {
         localStorage.setItem('killed_ships', "");
         localStorage.setItem('played_questions', "");
         localStorage.setItem('question_types', "");
-        localStorage.setItem('carrier_number', "");
         window.location.reload();
       });
     });

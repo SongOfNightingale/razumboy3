@@ -46,6 +46,7 @@ export class PredictionSelectorComponent {
       }
       this.columnNumber = parseInt(response[0].fieldColumns);
       this.rowNumber = parseInt(response[0].fieldRows);
+      this.columnLabels = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
       for (let i = 0; i < 26 - this.columnNumber; i++) {
         this.columnLabels.pop();
       }

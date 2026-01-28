@@ -53,13 +53,6 @@ export class PlayerBattlefieldSelectorComponent {
 
   constructor(private fleetService: BattlefieldService, private userService: UserService, private commandService: CommandService, private settingsService: SettingsService) {
     this.userId = localStorage.getItem('userId');
-    this.settingsService.get_numbers().subscribe((data: any) => {
-      this.columnNumber = parseInt(data[0].fieldColumns);
-      this.rowNumber = parseInt(data[0].fieldRows);
-      for (let i = 0; i < 26 - this.columnNumber; i++) {
-        this.columnLabels.pop();
-      }
-    });
     //this.showBattlefield();
   }
 
@@ -87,7 +80,15 @@ export class PlayerBattlefieldSelectorComponent {
       else {
         this.disabled = false;
       }
-      this.showBattlefield();
+      this.settingsService.get_numbers().subscribe((data: any) => {
+        this.columnNumber = parseInt(data[0].fieldColumns);
+        this.rowNumber = parseInt(data[0].fieldRows);
+        this.columnLabels = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+        for (let i = 0; i < 26 - this.columnNumber; i++) {
+          this.columnLabels.pop();
+        }
+        this.showBattlefield();
+      });
     });
   }
 

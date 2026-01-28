@@ -66,6 +66,7 @@ export class UpdateQuestionComponent {
         this.image_link = response4[1];
         this.audio_link = response4[2];
         this.video_link = response4[3];
+        this.time_to_answer = response4[7];
         for (let i = 0; i < this.questionTypes.length; i++) {
           if (this.questionTypes[i].name == this.selectedType) {
             this.typeId = this.questionTypes[i].id;
