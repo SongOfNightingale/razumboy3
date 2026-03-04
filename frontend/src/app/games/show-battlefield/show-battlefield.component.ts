@@ -180,6 +180,14 @@ export class ShowBattlefieldComponent {
     return this.grid[row][col];
   }
 
+  private shuffleArray<T>(array: T[]): T[] {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+  }
+
   ngOnInit(): void {
     this.settingsService.get_numbers().subscribe((data: any) => {
       this.columnNumber = parseInt(data[0].fieldColumns);
@@ -263,7 +271,33 @@ export class ShowBattlefieldComponent {
             this.locked = true;
           }
           this.questionService.get_all_game_questions().subscribe((response2: any) => {
-            this.gameQuestions = response2;
+            const orderKey = `questions_order_${this.gameId}`;
+            let orderedQuestions: any[] = [];
+            const storedOrder = localStorage.getItem(orderKey);
+
+            if (storedOrder) {
+              try {
+                const orderIds: any[] = JSON.parse(storedOrder);
+                if (orderIds.length === response2.length) {
+                  orderedQuestions = orderIds
+                    .map(id => response2.find((q: any) => q.id === id))
+                    .filter(q => q); // drop any undefined
+                }
+              } catch (e) {
+                console.warn('invalid stored question order, will reshuffle', e);
+              }
+            }
+
+            if (orderedQuestions.length !== response2.length) {
+              // no valid saved order – shuffle and persist
+              orderedQuestions = [...response2];
+              this.shuffleArray(orderedQuestions);
+              const newOrderIds = orderedQuestions.map(q => q.id);
+              localStorage.setItem(orderKey, JSON.stringify(newOrderIds));
+            }
+
+            this.gameQuestions = orderedQuestions;
+            
             var playedQuestionsArray = this.playedQuestions.split(',').map((q: string) => q.trim()).filter((q: string) => q !== '');
             if (this.questionTypes == '') {
               for (let i = 0; i < this.gameQuestions.length; i++) {
