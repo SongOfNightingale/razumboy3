@@ -48,6 +48,7 @@ export class ShowBattlefieldComponent {
   explosionSound = new Audio('/assets/explosion.wav');
   killExplosionSound = new Audio('/assets/big_explosion.wav');
   waterSplashSound = new Audio('/assets/water.mp3');
+  penaltySound = new Audio('/assets/penalty.mp3');
 
   originalList: string[] = ['Alice', 'Bob', 'Charlie', 'Diana', 'Edward'];
   originalListId: string[] = ['Alice', 'Bob', 'Charlie', 'Diana', 'Edward'];
@@ -291,7 +292,9 @@ export class ShowBattlefieldComponent {
             if (orderedQuestions.length !== response2.length) {
               // no valid saved order – shuffle and persist
               orderedQuestions = [...response2];
-              this.shuffleArray(orderedQuestions);
+              for (let i = 0; i < 5; i++) {                
+                this.shuffleArray(orderedQuestions);
+              }
               const newOrderIds = orderedQuestions.map(q => q.id);
               localStorage.setItem(orderKey, JSON.stringify(newOrderIds));
             }
@@ -579,7 +582,10 @@ export class ShowBattlefieldComponent {
       cell.justRevealed = true;
       setTimeout(() => this.missileSound.play(), 300);
       const shipIsSunk1 = this.isShipSunk(ship.id);
-      if (shipIsSunk1) {
+      if (ship?.name.toString().startsWith("Штраф") || ship?.name.toString().startsWith("Налог")) {
+        setTimeout(() => this.penaltySound.play(), 300);
+      }
+      else if (shipIsSunk1) {
         setTimeout(() => this.killExplosionSound.play(), 300);
       }
       else {

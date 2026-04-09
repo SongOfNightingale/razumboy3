@@ -1,0 +1,88 @@
+.content-container {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    height: 100vh;
+}
+
+.left-half,
+.right-half {
+    flex: 1;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    background-color: #f5f5f5;
+    margin: 20px;
+}
+
+.left-half h2,
+.right-half h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+table {
+    width: 90%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    font-family: 'Nokia';
+}
+
+th,
+td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: center;
+}
+
+th {
+    cursor: pointer;
+}
+
+th i {
+    margin-left: 5px;
+}
+
+th i.fa-sort-up {
+    color: #007bff;
+}
+
+th i.fa-sort-down {
+    color: #dc3545;
+}
+
+.styled-table {
+    border-collapse: collapse;
+    margin: 25px 0;
+    font-size: 18px;
+    min-width: 400px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+}
+
+.styled-table thead tr {
+    background-color: darkgray;
+    color: black;
+    text-align: left;
+}
+
+.styled-table th,
+.styled-table td {
+    padding: 12px 15px;
+}
+
+.styled-table tbody tr {
+    border-bottom: 1px solid #dddddd;
+}
+
+.styled-table tbody tr:nth-of-type(even) {
+    background-color: #f3f3f3;
+}
+
+.styled-table tbody tr:last-of-type {
+    border-bottom: 2px solid #009879;
+}
+
+.styled-table tbody tr.active-row {
+    font-weight: bold;
+    color: #009879;
+}

@@ -1,0 +1,20 @@
+<div class="content-container">
+    <table class="styled-table">
+        <thead>
+            <tr>
+                <th>№</th>
+                <th>{{teamMessage}}</th>
+                <th>Нострадамус</th>
+                <th>Мина</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let prediction of userPredictions; index as i">
+                <td>{{i+1}}</td>
+                <td>{{ prediction.user_name }}</td>
+                <td>{{ prediction.cell }}</td>
+                <td>{{ prediction.cell_two }}</td>
+            </tr>
+        </tbody>
+    </table>
+</div>

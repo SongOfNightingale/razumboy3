@@ -16,6 +16,7 @@ export class HostComponent {
   answerEnabled: boolean = false;
   userAnswerEnabled: boolean = false;
   scoreEnabled: boolean = false;
+  predictionEnabled: boolean = false;
 
   constructor(private commandService: CommandService) {
     setInterval(() => {
@@ -32,6 +33,7 @@ export class HostComponent {
             this.answerEnabled = false;
             this.userAnswerEnabled = false;
             this.scoreEnabled = false;
+            this.predictionEnabled = false;
           }
           else if (this.screenCommand.startsWith("question")) {
             this.logoEnabled = false;
@@ -40,6 +42,7 @@ export class HostComponent {
             this.answerEnabled = false;
             this.userAnswerEnabled = false;
             this.scoreEnabled = false;
+            this.predictionEnabled = false;
           }
           else if (this.screenCommand.startsWith("media")) {
             this.logoEnabled = false;
@@ -48,6 +51,7 @@ export class HostComponent {
             this.answerEnabled = false;
             this.userAnswerEnabled = false;
             this.scoreEnabled = false;
+            this.predictionEnabled = false;
           }
           else if (this.screenCommand.startsWith("correct")) {
             this.logoEnabled = false;
@@ -56,6 +60,7 @@ export class HostComponent {
             this.answerEnabled = true;
             this.userAnswerEnabled = false;
             this.scoreEnabled = false;
+            this.predictionEnabled = false;
           }
           else if (this.screenCommand.startsWith("user")) {
             this.logoEnabled = false;
@@ -64,6 +69,7 @@ export class HostComponent {
             this.answerEnabled = false;
             this.userAnswerEnabled = true;
             this.scoreEnabled = false;
+            this.predictionEnabled = false;
           }
           else if (this.screenCommand.startsWith("score")) {
             this.logoEnabled = false;
@@ -72,6 +78,16 @@ export class HostComponent {
             this.answerEnabled = false;
             this.userAnswerEnabled = false;
             this.scoreEnabled = true;
+            this.predictionEnabled = false;
+          }
+          else if (this.screenCommand.startsWith("prediction")) {
+            this.logoEnabled = false;
+            this.questionEnabled = false;
+            this.mediaQuestionEnabled = false;
+            this.answerEnabled = false;
+            this.userAnswerEnabled = false;
+            this.scoreEnabled = false;
+            this.predictionEnabled = true;
           }
         }
       });

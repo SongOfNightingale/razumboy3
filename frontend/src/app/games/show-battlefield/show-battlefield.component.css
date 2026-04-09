@@ -363,7 +363,7 @@ th i.fa-sort-down {
 }
 
 .sidebar-toggle-btn {
-    position: absolute;
+    position: fixed;
     top: 1rem;
     left: 200px;
     background-color: #2c3e50;

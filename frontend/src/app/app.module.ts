@@ -58,6 +58,7 @@ import { PlayerBattlefieldSelectorComponent } from './selectors/player-battlefie
 import { PredictionSelectorComponent } from './selectors/prediction-selector/prediction-selector.component';
 import { GamePredictionsComponent } from './games/game-predictions/game-predictions.component';
 import { GameUserAnswersComponent } from './games/game-user-answers/game-user-answers.component';
+import { ListPredictionsComponent } from './selectors/list-predictions/list-predictions.component';
 
 @NgModule({
   declarations: [
@@ -107,6 +108,7 @@ import { GameUserAnswersComponent } from './games/game-user-answers/game-user-an
     PredictionSelectorComponent,
     GamePredictionsComponent,
     GameUserAnswersComponent,
+    ListPredictionsComponent,
   ],
   imports: [
     BrowserModule,

@@ -42,7 +42,7 @@ export class CreateQuestionComponent {
 
   checked: boolean[] = [false, false, false, false, false];
 
-  time_to_answer: string[] = ['60', '60', '60', '60', '60'];
+  time_to_answer: string[] = ['30', '30', '30', '30', '30'];
 
   constructor(private snackBar: MatSnackBar, private fileUploadService: FileUploadService, private router: Router, private questionsService: QuestionsService, private dialog: MatDialog) {
     this.questionsService.get_all_question_types().subscribe((response2: any) => {

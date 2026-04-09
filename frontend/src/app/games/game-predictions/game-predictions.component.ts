@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { SettingsService } from '../../services/settings.service';
 import { UserService } from '../../services/user.service';
 import { MatTableDataSource } from '@angular/material/table';
+import { CommandService } from '../../services/command.service';
 
 interface Prediction {
   user_id: number;
@@ -34,7 +35,7 @@ export class GamePredictionsComponent implements OnInit, OnDestroy {
     this.isSidebarCollapsed = !this.isSidebarCollapsed;
   }
 
-  constructor(private settingsService: SettingsService, private userService: UserService) {
+  constructor(private settingsService: SettingsService, private userService: UserService, private commandService: CommandService) {
     this.gameId = localStorage.getItem('gameId') || '';
   }
 
@@ -74,6 +75,10 @@ export class GamePredictionsComponent implements OnInit, OnDestroy {
           }
         );
       });
+  }
+
+  showHost(): void {
+    this.commandService.set_command("prediction," + this.gameId, 2).subscribe(response => {});
   }
 
   ngOnDestroy(): void {
