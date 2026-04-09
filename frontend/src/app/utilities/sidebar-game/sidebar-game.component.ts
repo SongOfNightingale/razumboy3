@@ -78,7 +78,9 @@ export class SidebarGameComponent {
       this.router.navigate(['/choose-draw']);
     }
     else if (item.label == "Таблица") {
-      this.router.navigate(['/game-table']);
+      this.commandService.set_command("logo," + this.gameId + "," + this.logo_link, 3).subscribe((response: any) => {
+        this.router.navigate(['/game-table']);
+      });
     }
     else if (item.label == "Штрафы") {
       this.router.navigate(['/game-penalties']);
